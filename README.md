@@ -19,16 +19,19 @@ A free browser trading game: buy low, sell high, dodge the police and pay off Un
 - Medical cannabis prescription: clinic, pharmacy, telehealth renewal
 - Shop: bigger backpack, scooter, car, delivery van, protection
 - Debt to Uncle Zbych: repay, borrow, debt collectors, bankruptcy
-- 3 difficulty levels, tutorial, autosave, leaderboard with nicknames
+- 3 difficulty levels, tutorial, autosave
+- Online leaderboard with cheat protection: the server replays the whole game from its seed and move list and computes the score itself
 - Full English and Polish versions, switchable mid-game
 - No cookies, no tracking — everything is stored locally in the browser
 
 ## Tech stack
 
-[Astro](https://astro.build) (static build) + [Svelte 5](https://svelte.dev) + [TanStack Store](https://tanstack.com/store) + [Lucide](https://lucide.dev) icons.
+[Astro](https://astro.build) (static build) + [Svelte 5](https://svelte.dev) + [TanStack Store](https://tanstack.com/store) + [Lucide](https://lucide.dev) icons. Online leaderboard: [Cloudflare Workers](https://workers.cloudflare.com) + D1, fetched with [TanStack Query](https://tanstack.com/query).
 
 ```
 src/game/        game logic in plain TypeScript (no UI) — state + action → new state
+src/game/replay.ts  move log + replay, shared by the game and the leaderboard server
+worker/          leaderboard API (Cloudflare Worker + D1)
 src/i18n/        Polish and English texts
 src/stores/      TanStack Store: app state, actions, autosave
 src/components/  Svelte 5 components
@@ -46,6 +49,8 @@ npm run dev        # http://localhost:4321/nocny-kurs/
 npm test           # game logic tests
 npm run test:e2e   # build + browser tests (requires Google Chrome)
 npm run build      # production build in dist/
+npm run api:dev    # leaderboard API locally (http://localhost:8787)
+npm run api:deploy # deploy the leaderboard API to Cloudflare
 ```
 
 Every push to `main` runs the tests and deploys the game to GitHub Pages (`.github/workflows/deploy.yml`).
