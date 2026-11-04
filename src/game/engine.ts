@@ -2,7 +2,7 @@
  * Silnik gry: czyste funkcje (stan → nowy stan + efekty). Bez DOM, bez localStorage, bez Math.random.
  * Każda akcja klonuje stan wejściowy, więc wejście nigdy nie jest modyfikowane (cofanie ruchu = poprzedni stan).
  */
-import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
+import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, LOSS, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
 import { pick, rng } from './rng';
 import type {
   CityId, Diff, Fx, GameState, GoodId, ItemId, Msg, Outcome, PoliceChoice, Rating, RobberyChoice, Sender, Src, TradeMode,
@@ -189,7 +189,7 @@ export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
   if (s.tut >= 3 && used(s) > 0) {
     const chance = (0.06 + s.heat * 0.004 + c.police * 0.02) * DIFFS[s.diff].police * V[s.vehicle].police;
     if (rng(s) < chance) fx.push(...startPolice(s));
-    else if (rng(s) < ROBBERY_CHANCE) s.pending = { kind: 'robbery', runP: V[s.vehicle].run, fightP: s.weapon ? W[s.weapon].fight : 0 };
+    else if (rng(s) < ROBBERY_CHANCE * DIFFS[s.diff].police) s.pending = { kind: 'robbery', runP: V[s.vehicle].run, fightP: s.weapon ? W[s.weapon].fight : 0 };
   }
   return bankruptCheck({ s, fx });
 }
@@ -218,10 +218,18 @@ function startPolice(s: GameState): Fx[] {
   return [];
 }
 /** Zabiera nielegalny towar; susz apteczny na ważną receptę zostaje */
-function loseIllegal(s: GameState): boolean {
-  const keep = legalQty(s) ? s.inv[MED.id] : undefined;
-  s.inv = keep ? { [MED.id]: keep } : {};
-  return !!keep;
+/**
+ * Zabiera ułamek `share` każdego towaru (zaokrąglając w górę).
+ * `keepLegal`: susz apteczny na ważną receptę zostaje nietknięty. Zwraca true, jeśli coś legalnego ocalało.
+ */
+function loseShare(s: GameState, share: number, keepLegal: boolean): boolean {
+  const legal = keepLegal && legalQty(s) > 0;
+  for (const [k, h] of Object.entries(s.inv) as [ItemId, { qty: number; avg: number }][]) {
+    if (legal && k === MED.id) continue;
+    h.qty -= Math.ceil(h.qty * share);
+    if (h.qty <= 0) delete s.inv[k];
+  }
+  return legal;
 }
 export function resolvePolice(prev: GameState, choice: PoliceChoice): Outcome {
   const P = prev.pending;
@@ -232,18 +240,18 @@ export function resolvePolice(prev: GameState, choice: PoliceChoice): Outcome {
   s.pending = null;
   const body: Msg[] = [];
   const caught = (mult = 1, key = 'caught') => {
-    const f = Math.round(s.cash * 0.2 * mult);
+    const f = Math.round(s.cash * LOSS.policeFine * mult);
     s.cash -= f;
     s.heat = Math.min(100, s.heat + 15);
     body.push(m(key, { f }));
-    if (loseIllegal(s)) body.push(m('keptMed'));
+    if (loseShare(s, LOSS.policeCaught, true)) body.push(m('keptMed'));
     if (s.weapon && !W[s.weapon].legal) { s.weapon = null; s.cash = Math.max(0, s.cash - GUN_FINE); body.push(m('gunLost', { f: GUN_FINE })); }
   };
   if (choice === 'run') {
     if (rng(s) * 100 < P.runP) { s.heat = Math.min(100, s.heat + 10); body.push(m('okRun')); } else caught();
   } else if (choice === 'dump') {
     body.push(m('dumped'));
-    if (loseIllegal(s)) body.push(m('keptMed'));
+    if (loseShare(s, LOSS.policeDump, true)) body.push(m('keptMed'));
   } else if (choice === 'bribe') {
     s.cash -= P.bribeC;
     if (rng(s) * 100 < P.bribeP) body.push(m('bribed')); else caught();
@@ -261,23 +269,19 @@ export function resolveRobbery(prev: GameState, choice: RobberyChoice): Outcome 
   const s = clone(prev);
   s.pending = null;
   const body: Msg[] = [];
-  const loseAll = (cashShare: number, key: string) => {
+  const lose = (cashShare: number, key: string) => {
     const f = Math.round(s.cash * cashShare);
     s.cash -= f;
-    s.inv = {};
+    loseShare(s, LOSS.robFail, false);
     body.push(m(key, { f }));
   };
   if (choice === 'give') {
-    // oddajesz połowę każdego towaru (zaokrąglając w górę)
-    for (const [k, h] of Object.entries(s.inv) as [ItemId, { qty: number; avg: number }][]) {
-      h.qty -= Math.ceil(h.qty / 2);
-      if (h.qty <= 0) delete s.inv[k];
-    }
+    loseShare(s, LOSS.robGive, false);
     body.push(m('robGive'));
   } else if (choice === 'run') {
-    if (rng(s) * 100 < P.runP) body.push(m('robRunOk')); else loseAll(0, 'robRunFail');
+    if (rng(s) * 100 < P.runP) body.push(m('robRunOk')); else lose(0, 'robRunFail');
   } else {
-    if (rng(s) * 100 < P.fightP) body.push(m('robFightOk')); else loseAll(0.3, 'robFightFail');
+    if (rng(s) * 100 < P.fightP) body.push(m('robFightOk')); else lose(LOSS.robFightCash, 'robFightFail');
   }
   return bankruptCheck({ s, fx: [{ t: 'info', title: 'robTitle', body }] });
 }

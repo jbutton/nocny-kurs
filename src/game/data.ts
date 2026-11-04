@@ -81,7 +81,9 @@ export const DODGE = { chance: 0.3, fine: 150 };
 export const BORROW = { capMult: 3, worthMult: 2 };
 /** Windykacja: powyżej atMult × długu startowego, co `every` dni zabierają część gotówki albo towaru */
 export const COLLECT = { atMult: 2, every: 3, cashShare: 0.3, stashShare: 0.5 };
-export const ROBBERY_CHANCE = 0.07;
+export const ROBBERY_CHANCE = 0.07; // × mnożnik poziomu trudności (jak kontrole policji)
+/** Ile towaru tracisz: pewna opcja (wyrzuć/oddaj) vs porażka (złapany, nieudana ucieczka/walka) */
+export const LOSS = { policeDump: 0.5, policeCaught: 0.5, policeFine: 0.2, robGive: 0.25, robFail: 0.5, robFightCash: 0.2 };
 export const V = Object.fromEntries(VEHICLES.map((v) => [v.id, v])) as Record<VehicleId, Vehicle>;
 export const W = Object.fromEntries(WEAPONS.map((w) => [w.id, w])) as Record<WeaponId, Weapon>;
 

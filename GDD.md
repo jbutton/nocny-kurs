@@ -187,9 +187,9 @@ Skala 0–100, pokazywana jako **poziom poszukiwania: 0–5 gwiazdek** (co 20 pu
 Wybory gracza:
 - **Uciekaj:** szansa zależy od transportu. Sukces daje heat +10, porażka oznacza zatrzymanie.
 - **Przekup:** koszt zależy od wartości towaru. Szansa zależy od heatu i kontaktów.
-- **Zrzuć towar:** tracisz towar, nie dostajesz kary.
+- **Wyrzuć część towaru:** pewne, tracisz połowę nielegalnego towaru, bez kary.
 - **Blefuj:** mała szansa na sukces, która rośnie, jeśli masz przykrywkę („jestem dostawcą kebabu”).
-- **Zatrzymanie:** konfiskata towaru, grzywna albo areszt (kosztuje 2–5 dni).
+- **Zatrzymanie:** konfiskata połowy nielegalnego towaru i grzywna 20% gotówki (areszt: później).
 
 ### 7.2 Wydarzenia rynkowe (newsy)
 Przykłady. Każde ma tekst PL i EN oraz efekt:
@@ -227,10 +227,10 @@ Kupowany w zakładce **Sklep**, tylko „w górę” (każdy następny ma więce
 | Kurier / dron (później) | — | — | — | Wysyłka bez podróżowania, z ryzykiem utraty. |
 
 ### 8.1a Sklep: ochrona i napady
-**Napad na trasie** (ok. 7% szans przy podróży z towarem, jeśli nie było kontroli). Wybory:
-- **Oddaj połowę towaru:** pewne, tracisz połowę każdego towaru.
-- **Uciekaj:** szansa zależy od transportu. Porażka oznacza utratę całego towaru.
-- **Broń się** (tylko z ochroną): szansa zależy od broni. Porażka oznacza utratę towaru i 30% gotówki.
+**Napad na trasie** (ok. 7% szans przy podróży z towarem, jeśli nie było kontroli; × mnożnik poziomu trudności: łatwy 0,5, normalny 1, trudny 1,5). Wybory:
+- **Oddaj część towaru:** pewne, tracisz ćwierć każdego towaru.
+- **Uciekaj:** szansa zależy od transportu. Porażka oznacza utratę połowy towaru.
+- **Broń się** (tylko z ochroną): szansa zależy od broni. Porażka oznacza utratę połowy towaru i 20% gotówki.
 
 | Ochrona | Cena | Obrona | Uwagi |
 |---|---|---|---|
@@ -417,6 +417,15 @@ Główny ekran to smartfon. Na desktopie telefon jest na środku, a obok rozmyte
 - **Dane w plikach JSON:** towary, miasta, eventy, teksty. Balans zmienia się bez zmian w kodzie.
 
 ---
+
+## 14a-bis. Balans (symulacja `npm run sim`, bot 2000 gier/poziom)
+Po zmianie strat z „cały towar” na „połowa” i skalowaniu napadów poziomem trudności:
+
+| Poziom | Wygrane (wynik > 0) | Bankructwa | Mediana wyniku |
+|---|---|---|---|
+| Łatwy | 97% (przed: 47%) | 0,6% (przed: 15,7%) | 119 748 zł |
+| Normalny | 89% (przed: 30%) | 3,0% (przed: 23,0%) | 36 820 zł |
+| Trudny | 47% (przed: 13%) | 10,3% (przed: 39,6%) | −14 284 zł |
 
 ## 14b. Hosting i SEO
 - **Hosting:** GitHub Pages, za darmo, pod adresem `https://jbutton.github.io/nocny-kurs/`. Wdrażanie automatyczne przez GitHub Actions po każdym pushu na `main`.

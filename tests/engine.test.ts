@@ -101,11 +101,11 @@ describe('recepta i apteka', () => {
     }
     expect(hit).toBe(true);
   });
-  it('policja zabiera nielegalny towar, susz na receptę zostaje', () => {
+  it('wyrzucenie towaru: znika połowa nielegalnego, susz na receptę zostaje', () => {
     let s = trade(withRx(), 'medweed', 'buy', 10, 'pharm').s;
     s = { ...s, inv: { ...s.inv, weed: { qty: 5, avg: 20 } }, pending: { kind: 'police', illegal: 5, legal: 10, runP: 50, bribeC: 300, bribeP: 50, canBluff: true } };
     const r = resolvePolice(s, 'dump');
-    expect(r.s.inv.weed).toBeUndefined();
+    expect(r.s.inv.weed?.qty).toBe(2); // 5 − ceil(2.5)
     expect(r.s.inv.medweed?.qty).toBe(10);
     expect(r.s.pending).toBeNull();
   });
@@ -139,12 +139,14 @@ describe('sklep i napad', () => {
     s.pending = { kind: 'police', illegal: 5, legal: 0, runP: 0, bribeC: 300, bribeP: 50, canBluff: false };
     const r = resolvePolice(s, 'run'); // runP 0 → złapany
     expect(r.s.weapon).toBeNull();
-    expect(r.s.inv).toEqual({});
+    expect(r.s.inv.weed?.qty).toBe(2); // zabrali połowę
   });
-  it('napad: oddanie połowy towaru', () => {
+  it('napad: oddanie ćwierci towaru, nieudana ucieczka = połowa', () => {
     const s: GameState = { ...afterTutorial(), inv: { weed: { qty: 5, avg: 20 }, coke: { qty: 1, avg: 500 } }, pending: { kind: 'robbery', runP: 50, fightP: 0 } };
     const r = resolveRobbery(s, 'give');
-    expect(r.s.inv).toEqual({ weed: { qty: 2, avg: 20 } });
+    expect(r.s.inv).toEqual({ weed: { qty: 3, avg: 20 } }); // 5 − ceil(1.25), 1 − ceil(0.25)
+    const fail = resolveRobbery({ ...s, pending: { kind: 'robbery', runP: 0, fightP: 0 } }, 'run');
+    expect(fail.s.inv).toEqual({ weed: { qty: 2, avg: 20 } });
     expect(resolveRobbery(s, 'fight').s).toBe(s); // bez broni nie da się walczyć
   });
 });
