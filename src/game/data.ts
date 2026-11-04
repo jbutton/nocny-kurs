@@ -59,13 +59,14 @@ export const ECON = {
 };
 
 /** Transport: pojemność, szansa ucieczki przed policją/napadem, mnożnik szansy kontroli */
-export interface Vehicle { id: VehicleId; price: number; cap: number; run: number; police: number }
+/** fuel: 0 = jedziesz pociągiem (bilet); > 0 = własny pojazd, paliwo = bilet × fuel */
+export interface Vehicle { id: VehicleId; price: number; cap: number; run: number; police: number; fuel: number }
 export const VEHICLES: Vehicle[] = [
-  { id: 'backpack', price: 0, cap: 100, run: 50, police: 1 },
-  { id: 'bigpack', price: 1500, cap: 150, run: 45, police: 1 }, // cięższy = trudniej uciec
-  { id: 'scooter', price: 8000, cap: 200, run: 65, police: 1 },
-  { id: 'car', price: 25000, cap: 350, run: 55, police: 1 },
-  { id: 'van', price: 70000, cap: 700, run: 35, police: 1.25 },
+  { id: 'backpack', price: 0, cap: 100, run: 50, police: 1, fuel: 0 },
+  { id: 'bigpack', price: 1500, cap: 150, run: 45, police: 1, fuel: 0 }, // cięższy = trudniej uciec
+  { id: 'scooter', price: 8000, cap: 200, run: 65, police: 1, fuel: 0.5 },
+  { id: 'car', price: 25000, cap: 350, run: 55, police: 1, fuel: 1.3 },
+  { id: 'van', price: 70000, cap: 700, run: 35, police: 1.25, fuel: 2 },
 ];
 /** Ochrona przed napadem. Nielegalna broń: przy złapaniu przez policję konfiskata + dodatkowa grzywna */
 export interface Weapon { id: WeaponId; price: number; fight: number; legal: boolean }

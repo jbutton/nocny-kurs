@@ -5,6 +5,7 @@
   import { actions } from '../stores/app';
   import { DICTS, t } from '../i18n';
   import { CITIES } from '../game/data';
+  import { travelCost } from '../game/engine';
   import type { GameState, Lang } from '../game/types';
 
   let { game, lang }: { game: GameState; lang: Lang } = $props();
@@ -20,7 +21,7 @@
     <ItemIcon name={here ? 'here' : 'city'} />
     <div class="grow">
       <div class="name">{d.cities[c.id]}</div>
-      <div class="sub">{here ? t(lang, 'here') : t(lang, 'ticket', { p: c.ticket })}{game.rxUnlocked && c.clinic ? ' · ' + t(lang, 'clinicHere') : ''}</div>
+      <div class="sub">{#if here}{t(lang, 'here')}{:else}{@const tc = travelCost(game, c.id)}{t(lang, tc.kind === 'fuel' ? 'fuel' : 'ticket', { p: tc.cost })}{/if}{game.rxUnlocked && c.clinic ? ' · ' + t(lang, 'clinicHere') : ''}</div>
     </div>
     <div class="pol" title={t(lang, 'polLvlTip', { n: c.police })}>
       <span class="cap"><Siren size={11} strokeWidth={2.4} /> {t(lang, 'polLvl')}</span>

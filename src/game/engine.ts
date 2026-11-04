@@ -130,13 +130,19 @@ export function trade(prev: GameState, item: ItemId, mode: TradeMode, n: number,
  * Podróż do innego miasta. `dodge` = jazda na gapę: bez biletu, z ryzykiem mandatu.
  * Bez pieniędzy na bilet można jechać tylko na gapę.
  */
+/** Koszt podróży: bilet na pociąg albo paliwo do własnego pojazdu */
+export function travelCost(s: GameState, to: CityId): { kind: 'ticket' | 'fuel'; cost: number } {
+  const fuel = V[s.vehicle].fuel;
+  return fuel ? { kind: 'fuel', cost: Math.round(C[to].ticket * fuel) } : { kind: 'ticket', cost: C[to].ticket };
+}
 export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
   if (to === prev.city || prev.day >= prev.maxDays || prev.pending || prev.over) return { s: prev, fx: [] };
   const c = C[to];
-  if (!dodge && prev.cash < c.ticket) return { s: prev, fx: [] };
+  const cost = travelCost(prev, to).cost;
+  if (!dodge && prev.cash < cost) return { s: prev, fx: [] };
   const s = clone(prev);
   const fx: Fx[] = [];
-  if (!dodge) s.cash -= c.ticket;
+  if (!dodge) s.cash -= cost;
   else if (rng(s) < DODGE.chance) {
     // kanar: płacisz z gotówki, a jak nie masz — Zbychu płaci za ciebie i dopisuje do długu
     if (s.cash >= DODGE.fine) { s.cash -= DODGE.fine; fx.push({ t: 'info', title: 'kanarTitle', body: [m('kanarPaid', { f: DODGE.fine })] }); }

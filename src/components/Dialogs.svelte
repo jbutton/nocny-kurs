@@ -12,7 +12,8 @@
   import { actions, type Dialog } from '../stores/app';
   import { DICTS, fmt, t, tm } from '../i18n';
   import { C, DODGE, RX } from '../game/data';
-  import { bestWeapon, canVisitClinic, rankOf } from '../game/engine';
+  import { bestWeapon, canVisitClinic, rankOf, travelCost } from '../game/engine';
+  import Fuel from '@lucide/svelte/icons/fuel';
   import { forDiff, NICK_MAX, type BoardEntry } from '../game/leaderboard';
   import type { Diff, GameState, Lang } from '../game/types';
 
@@ -53,13 +54,15 @@
   </Modal>
 {:else if dialog?.kind === 'travel'}
   <Modal title={t(lang, 'travelTitle', { city: dialog.to })} icon={TrainFront} onclose={actions.closeDialog}>
-    {@const ticket = C[dialog.to].ticket}
+    {@const tc = travelCost(game, dialog.to)}
+    {@const ticket = tc.cost}
+    {@const byCar = tc.kind === 'fuel'}
     {@const canPay = game.cash >= ticket}
-    <div class="body">{t(lang, 'travelText', { i: game.debt * 0.07 })}{#if !canPay}<br /><br /><b class="warn">{t(lang, 'noTicket', { p: ticket })}</b>{/if}</div>
+    <div class="body">{t(lang, 'travelText', { i: game.debt * 0.07 })}{#if !canPay}<br /><br /><b class="warn">{t(lang, byCar ? 'noFuel' : 'noTicket', { p: ticket })}</b>{/if}</div>
     {#if canPay}
-      <button class="btn center iconed" onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to)}><TrainFront size={18} strokeWidth={2.4} /> {t(lang, 'goTicket', { p: ticket })}</button>
+      <button class="btn center iconed" onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to)}>{#if byCar}<Fuel size={18} strokeWidth={2.4} />{:else}<TrainFront size={18} strokeWidth={2.4} />{/if} {t(lang, byCar ? 'goFuel' : 'goTicket', { p: ticket })}</button>
     {/if}
-    <button class="btn" class:sec={canPay} onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to, true)}>{t(lang, 'dodge')}<small>{t(lang, 'dodgeSub', { f: DODGE.fine })}</small></button>
+    <button class="btn" class:sec={canPay} onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to, true)}>{t(lang, byCar ? 'dodgeTrain' : 'dodge')}<small>{t(lang, 'dodgeSub', { f: DODGE.fine })}</small></button>
     <button class="btn sec center" onclick={actions.closeDialog}>{t(lang, 'cancel')}</button>
   </Modal>
 {:else if dialog?.kind === 'clinic'}

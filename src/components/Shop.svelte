@@ -22,7 +22,7 @@
       <ItemIcon name={v.id} />
       <div class="grow">
         <div class="name">{d.gear[v.id]}</div>
-        <div class="sub">{t(lang, 'capLbl', { n: v.cap })} · {t(lang, 'runLbl', { p: v.run })}{v.police > 1 ? ' · ' + t(lang, 'vanLbl') : ''}</div>
+        <div class="sub">{t(lang, 'capLbl', { n: v.cap })} · {t(lang, 'runLbl', { p: v.run })} · {v.fuel ? t(lang, 'fuelLbl', { f: String(v.fuel).replace('.', lang === 'pl' ? ',' : '.') }) : t(lang, 'trainLbl')}{v.police > 1 ? ' · ' + t(lang, 'vanLbl') : ''}</div>
       </div>
       {#if owned}
         <span class="badge"><Check size={14} /> {t(lang, 'owned')}</span>

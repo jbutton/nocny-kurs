@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BORROW, COLLECT, DODGE, RX, V, W } from '../src/game/data';
 import {
   deposit, withdraw,
-  borrow, borrowLimit, isBankrupt,
+  borrow, borrowLimit, isBankrupt, travelCost,
   buyVehicle, buyWeapon, fightChance, canBuyVehicle, clinicVisit, finish, newGame, repay, resolvePolice, resolveRobbery,
   rxLeft, teleRenew, teleStatus, trade, tradeLimits, travel, used,
 } from '../src/game/engine';
@@ -119,6 +119,14 @@ describe('recepta i apteka', () => {
 });
 
 describe('sklep i napad', () => {
+  it('własny pojazd: paliwo zamiast biletu', () => {
+    const s = { ...afterTutorial(), cash: 100000 };
+    expect(travelCost(s, 'krk')).toEqual({ kind: 'ticket', cost: 50 });
+    expect(travelCost({ ...s, vehicle: 'scooter' }, 'krk')).toEqual({ kind: 'fuel', cost: 25 });
+    expect(travelCost({ ...s, vehicle: 'car' }, 'krk')).toEqual({ kind: 'fuel', cost: 65 });
+    expect(travelCost({ ...s, vehicle: 'van' }, 'krk')).toEqual({ kind: 'fuel', cost: 100 });
+    expect(travel({ ...s, vehicle: 'van' }, 'krk').s.cash).toBe(100000 - 100);
+  });
   it('transport tylko w górę, zwiększa pojemność', () => {
     const s = { ...afterTutorial(), cash: 30000 };
     expect(canBuyVehicle(s, 'backpack')).toBe(false);
