@@ -4,7 +4,11 @@ A free browser trading game: buy low, sell high, dodge the police and pay off Un
 
 **Play:** https://jbutton.github.io/nocny-kurs/en/ · **Po polsku:** https://jbutton.github.io/nocny-kurs/
 
-![Night Run](public/og.png)
+<p align="center">
+  <img src="docs/screen-market.png" alt="Market" width="260">
+  <img src="docs/screen-trade.png" alt="Buying" width="260">
+  <img src="docs/screen-map.png" alt="Map" width="260">
+</p>
 
 > 18+. The game is fiction and satire. It doesn't encourage breaking the law; it shows the risks and the consequences.
 
