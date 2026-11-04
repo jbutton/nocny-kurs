@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "sim": "SIM=1 vitest run --silent=false",
     "test:e2e": "astro build && playwright test"
   },
   "dependencies": {
