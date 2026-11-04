@@ -2,7 +2,7 @@
  * Silnik gry: czyste funkcje (stan → nowy stan + efekty). Bez DOM, bez localStorage, bez Math.random.
  * Każda akcja klonuje stan wejściowy, więc wejście nigdy nie jest modyfikowane (cofanie ruchu = poprzedni stan).
  */
-import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, LOSS, PROTECT, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
+import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, LOSS, PROTECT, RESALE, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
 import { pick, rng } from './rng';
 import type {
   CityId, Diff, Fx, GameState, GoodId, ItemId, Msg, Outcome, PoliceChoice, Rating, RobberyChoice, Sender, Src, TradeMode,
@@ -140,6 +140,7 @@ export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
   const c = C[to];
   const cost = travelCost(prev, to).cost;
   if (!dodge && prev.cash < cost) return { s: prev, fx: [] };
+  if (dodge && V[prev.vehicle].fuel) return { s: prev, fx: [] }; // własnym pojazdem nie da się jechać na gapę
   const s = clone(prev);
   const fx: Fx[] = [];
   if (!dodge) s.cash -= cost;
@@ -313,6 +314,31 @@ export function buyVehicle(prev: GameState, id: VehicleId): Outcome {
   s.cap = V[id].cap;
   return { s, fx: [{ t: 'toast', msg: m('boughtGear', { item: id }) }] };
 }
+/** Odsprzedaż pojazdu (powrót do zwykłego plecaka) */
+export const vehicleResale = (s: GameState) => (s.vehicle === 'backpack' ? 0 : Math.floor(V[s.vehicle].price * RESALE));
+/** Ile towaru trzeba się pozbyć, żeby zmieścić się w zwykłym plecaku */
+export const overflowIfSold = (s: GameState) => Math.max(0, used(s) - V.backpack.cap);
+export const canSellVehicle = (s: GameState) => vehicleResale(s) > 0 && overflowIfSold(s) === 0;
+export function sellVehicle(prev: GameState): Outcome {
+  if (!canSellVehicle(prev)) return { s: prev, fx: [] };
+  const s = clone(prev);
+  const sold = s.vehicle;
+  s.cash += vehicleResale(prev);
+  s.vehicle = 'backpack';
+  s.cap = V.backpack.cap;
+  return { s, fx: [{ t: 'toast', msg: m('soldGear', { item: sold, c: vehicleResale(prev) }) }] };
+}
+/** Brakuje na paliwo: pożycz brakującą kwotę od Zbycha i jedź */
+export function fuelShortfall(s: GameState, to: CityId) {
+  return Math.max(0, travelCost(s, to).cost - s.cash);
+}
+export function borrowAndTravel(prev: GameState, to: CityId): Outcome {
+  const need = fuelShortfall(prev, to);
+  if (need <= 0 || borrowLimit(prev) < need) return { s: prev, fx: [] };
+  const b = borrow(prev, need);
+  const t = travel(b.s, to);
+  return t.s === b.s ? { s: prev, fx: [] } : { s: t.s, fx: [...b.fx, ...t.fx] };
+}
 export const canBuyWeapon = (s: GameState, id: WeaponId) => !s.weapons.includes(id) && s.cash >= W[id].price;
 /** Najlepszy posiadany przedmiot ochrony */
 export function bestWeapon(s: GameState): WeaponId | null {
@@ -401,7 +427,7 @@ function collectors(s: GameState): Fx {
 export function isBankrupt(s: GameState): boolean {
   if (s.pending || s.over) return false;
   const cheapest = Math.min(...Object.values(s.prices[s.city]));
-  return s.cash + s.bank < cheapest && used(s) === 0 && borrowLimit(s) < cheapest;
+  return s.cash + s.bank < cheapest && used(s) === 0 && borrowLimit(s) < cheapest && vehicleResale(s) === 0;
 }
 function bankruptCheck(o: Outcome): Outcome {
   if (!isBankrupt(o.s)) return o;

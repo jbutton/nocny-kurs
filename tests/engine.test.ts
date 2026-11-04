@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BORROW, COLLECT, DODGE, RX, V, W } from '../src/game/data';
 import {
   deposit, withdraw,
-  borrow, borrowLimit, isBankrupt, travelCost,
+  borrow, borrowAndTravel, borrowLimit, isBankrupt, sellVehicle, travelCost,
   buyVehicle, buyWeapon, fightChance, canBuyVehicle, clinicVisit, finish, newGame, repay, resolvePolice, resolveRobbery,
   rxLeft, teleRenew, teleStatus, trade, tradeLimits, travel, used,
 } from '../src/game/engine';
@@ -126,6 +126,20 @@ describe('sklep i napad', () => {
     expect(travelCost({ ...s, vehicle: 'car' }, 'krk')).toEqual({ kind: 'fuel', cost: 65 });
     expect(travelCost({ ...s, vehicle: 'van' }, 'krk')).toEqual({ kind: 'fuel', cost: 100 });
     expect(travel({ ...s, vehicle: 'van' }, 'krk').s.cash).toBe(100000 - 100);
+  });
+  it('pojazdem nie da się na gapę; brak kasy na paliwo → pożyczka i jazda', () => {
+    const s = { ...afterTutorial(), vehicle: 'car' as const, cap: 350, cash: 20 };
+    expect(travel(s, 'krk', true).s).toBe(s);
+    const r = borrowAndTravel(s, 'krk'); // paliwo 65 zł, brakuje 45
+    expect(r.s.day).toBe(2);
+    expect(r.s.cash).toBe(0);
+    expect(r.s.debt).toBe(Math.round((5000 + 45) * 1.07));
+  });
+  it('sprzedaż pojazdu: tylko gdy towar mieści się w plecaku', () => {
+    const full = { ...afterTutorial(), vehicle: 'car' as const, cap: 350, cash: 0, inv: { weed: { qty: 150, avg: 20 } } };
+    expect(sellVehicle(full).s).toBe(full);
+    const ok = sellVehicle({ ...full, inv: { weed: { qty: 80, avg: 20 } } }).s;
+    expect(ok).toMatchObject({ vehicle: 'backpack', cap: 100, cash: V.car.price / 2 });
   });
   it('transport tylko w górę, zwiększa pojemność', () => {
     const s = { ...afterTutorial(), cash: 30000 };

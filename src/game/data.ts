@@ -76,6 +76,8 @@ export const WEAPONS: Weapon[] = [
   { id: 'gun', price: 6000, fight: 80, legal: false },
 ];
 export const GUN_FINE = 1000;
+/** Odsprzedaż pojazdu: ułamek ceny zakupu */
+export const RESALE = 0.5;
 /** Ochrona się sumuje: najlepszy przedmiot + bonus za każdy kolejny, z limitem */
 export const PROTECT = { perExtra: 5, max: 90 };
 /** Jazda na gapę: szansa na kanara i wysokość mandatu */

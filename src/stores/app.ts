@@ -128,6 +128,11 @@ export const actions = {
     apply(o, { dialog: null, sheet: null, tab: 'market', undo: null });
     if (o.s.day > o.s.maxDays) actions.finish();
   },
+  borrowAndTravel: (to: CityId) => {
+    const o = E.borrowAndTravel(g(), to);
+    if (o.s !== g()) apply(o, { dialog: null, sheet: null, tab: 'market', undo: null });
+  },
+  sellVehicle: () => apply(E.sellVehicle(g())),
   finish: () => apply(E.finish(g()), { sheet: null }),
   police: (c: PoliceChoice) => apply(E.resolvePolice(g(), c)),
   robbery: (c: RobberyChoice) => apply(E.resolveRobbery(g(), c)),

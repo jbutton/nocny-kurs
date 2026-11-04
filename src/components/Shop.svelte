@@ -4,7 +4,7 @@
   import { actions } from '../stores/app';
   import { DICTS, fmt, t } from '../i18n';
   import { VEHICLES, WEAPONS } from '../game/data';
-  import { canBuyVehicle, canBuyWeapon, fightChance, vehicleIndex } from '../game/engine';
+  import { canBuyVehicle, canBuyWeapon, canSellVehicle, fightChance, overflowIfSold, vehicleIndex, vehicleResale } from '../game/engine';
   import { PROTECT } from '../game/data';
   import type { GameState, Lang } from '../game/types';
 
@@ -30,6 +30,12 @@
         <button class="buy" disabled={!canBuyVehicle(game, v.id)} onclick={() => actions.buyVehicle(v.id)}>{fmt(lang, v.price)} zł</button>
       {/if}
     </div>
+    {#if owned && vehicleResale(game) > 0}
+      <div class="sell">
+        <button class="sellbtn" disabled={!canSellVehicle(game)} onclick={actions.sellVehicle}>{t(lang, 'sellFor', { c: vehicleResale(game) })}</button>
+        <span class="note">{overflowIfSold(game) ? t(lang, 'sellTooFull', { n: overflowIfSold(game) }) : t(lang, 'sellNote')}</span>
+      </div>
+    {/if}
   {/if}
 {/each}
 
@@ -62,4 +68,7 @@
   .buy:disabled { background: var(--card2); color: var(--muted); cursor: not-allowed; }
   .badge { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 800; font-size: 12px; }
   .illegal { color: var(--bad); font-weight: 700; }
+  .sell { display: flex; align-items: center; gap: 10px; margin: -2px 4px 12px; }
+  .sellbtn { border: 1px solid var(--line-strong); background: none; color: var(--text); font-weight: 700; font-size: 12px; border-radius: 10px; padding: 7px 10px; cursor: pointer; white-space: nowrap; }
+  .sellbtn:disabled { opacity: .45; cursor: not-allowed; }
 </style>

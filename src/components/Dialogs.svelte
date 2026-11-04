@@ -12,7 +12,7 @@
   import { actions, type Dialog } from '../stores/app';
   import { DICTS, fmt, t, tm } from '../i18n';
   import { C, DODGE, RX } from '../game/data';
-  import { bestWeapon, canVisitClinic, rankOf, travelCost } from '../game/engine';
+  import { bestWeapon, borrowLimit, canVisitClinic, fuelShortfall, rankOf, travelCost } from '../game/engine';
   import Fuel from '@lucide/svelte/icons/fuel';
   import { forDiff, NICK_MAX, type BoardEntry } from '../game/leaderboard';
   import type { Diff, GameState, Lang } from '../game/types';
@@ -62,7 +62,16 @@
     {#if canPay}
       <button class="btn center iconed" onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to)}>{#if byCar}<Fuel size={18} strokeWidth={2.4} />{:else}<TrainFront size={18} strokeWidth={2.4} />{/if} {t(lang, byCar ? 'goFuel' : 'goTicket', { p: ticket })}</button>
     {/if}
-    <button class="btn" class:sec={canPay} onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to, true)}>{t(lang, byCar ? 'dodgeTrain' : 'dodge')}<small>{t(lang, 'dodgeSub', { f: DODGE.fine })}</small></button>
+    {#if !byCar}
+      <button class="btn" class:sec={canPay} onclick={() => dialog?.kind === 'travel' && actions.travel(dialog.to, true)}>{t(lang, 'dodge')}<small>{t(lang, 'dodgeSub', { f: DODGE.fine })}</small></button>
+    {:else if !canPay}
+      {@const need = fuelShortfall(game, dialog.to)}
+      {#if borrowLimit(game) >= need}
+        <button class="btn" onclick={() => dialog?.kind === 'travel' && actions.borrowAndTravel(dialog.to)}>{t(lang, 'borrowFuel', { n: need })}<small>{t(lang, 'borrowFuelSub')}</small></button>
+      {:else}
+        <p class="note">{t(lang, 'noFuelHelp')}</p>
+      {/if}
+    {/if}
     <button class="btn sec center" onclick={actions.closeDialog}>{t(lang, 'cancel')}</button>
   </Modal>
 {:else if dialog?.kind === 'clinic'}
