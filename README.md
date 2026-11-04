@@ -1,50 +1,51 @@
-# 🌙 Nocny Kurs / Night Run
+# 🌙 Night Run / Nocny Kurs
 
-Darmowa gra ekonomiczna w przeglądarce: kupuj tanio, sprzedawaj drogo, uciekaj przed policją i spłać Wujka Zbycha w 30 dni. Polskie miasta, nocny klimat, PL i EN.
+A free browser trading game: buy low, sell high, dodge the police and pay off Uncle Zbych in 30 days. Set in Polish cities at night, playable in English and Polish.
 
-**Zagraj:** https://jbutton.github.io/nocny-kurs/ · **English:** https://jbutton.github.io/nocny-kurs/en/
+**Play:** https://jbutton.github.io/nocny-kurs/en/ · **Po polsku:** https://jbutton.github.io/nocny-kurs/
 
-![Nocny Kurs](public/og.png)
+![Night Run](public/og.png)
 
-> 18+. Gra jest fikcją i satyrą. Nie zachęca do łamania prawa — pokazuje ryzyko i konsekwencje.
+> 18+. The game is fiction and satire. It doesn't encourage breaking the law; it shows the risks and the consequences.
 
-## Co jest w grze
+## Features
 
-- 8 towarów i 8 miast (Warszawa, Kraków, Gdańsk, Szczecin, Wrocław, Poznań, Łódź, Katowice), każde z nocną panoramą
-- Poziom poszukiwania (gwiazdki), kontrole policji, napady, jazda na gapę
-- Recepta na medyczną marihuanę: klinika, apteka, teleporada
-- Sklep: większy plecak, skuter, auto, dostawczak, ochrona
-- Dług u Wujka Zbycha: spłata, pożyczki, windykacja, bankructwo
-- 3 poziomy trudności, samouczek, automatyczny zapis, ranking z nickiem
-- Pełna wersja polska i angielska, przełączana w trakcie gry
+- 8 goods and 8 cities (Warsaw, Kraków, Gdańsk, Szczecin, Wrocław, Poznań, Łódź, Katowice), each with its own night skyline
+- Wanted level (stars), police checks, robberies, riding without a ticket
+- Medical cannabis prescription: clinic, pharmacy, telehealth renewal
+- Shop: bigger backpack, scooter, car, delivery van, protection
+- Debt to Uncle Zbych: repay, borrow, debt collectors, bankruptcy
+- 3 difficulty levels, tutorial, autosave, leaderboard with nicknames
+- Full English and Polish versions, switchable mid-game
+- No cookies, no tracking — everything is stored locally in the browser
 
-## Technologia
+## Tech stack
 
-[Astro](https://astro.build) (statyczny build) + [Svelte 5](https://svelte.dev) + [TanStack Store](https://tanstack.com/store) + [Lucide](https://lucide.dev).
+[Astro](https://astro.build) (static build) + [Svelte 5](https://svelte.dev) + [TanStack Store](https://tanstack.com/store) + [Lucide](https://lucide.dev) icons.
 
 ```
-src/game/        logika gry w czystym TypeScripcie (bez UI) — stan + akcja → nowy stan
-src/i18n/        teksty PL i EN
-src/stores/      TanStack Store: stan aplikacji, akcje, autozapis
-src/components/  komponenty Svelte 5
-src/pages/       strony Astro: / (PL) i /en/ (EN)
-tests/           testy logiki (Vitest)
-e2e/             testy w przeglądarce (Playwright)
-GDD.md           dokument projektowy gry
+src/game/        game logic in plain TypeScript (no UI) — state + action → new state
+src/i18n/        Polish and English texts
+src/stores/      TanStack Store: app state, actions, autosave
+src/components/  Svelte 5 components
+src/pages/       Astro pages: / (Polish) and /en/ (English)
+tests/           game logic tests (Vitest)
+e2e/             browser tests (Playwright)
+GDD.md           game design document (in Polish)
 ```
 
-## Uruchomienie
+## Getting started
 
 ```bash
 npm install
 npm run dev        # http://localhost:4321/nocny-kurs/
-npm test           # testy logiki
-npm run test:e2e   # build + testy w przeglądarce (wymaga Google Chrome)
-npm run build      # wersja produkcyjna do dist/
+npm test           # game logic tests
+npm run test:e2e   # build + browser tests (requires Google Chrome)
+npm run build      # production build in dist/
 ```
 
-Każdy push na `main` uruchamia testy i wdraża grę na GitHub Pages (`.github/workflows/deploy.yml`).
+Every push to `main` runs the tests and deploys the game to GitHub Pages (`.github/workflows/deploy.yml`).
 
-## Licencja
+## License
 
 [MIT](LICENSE)
