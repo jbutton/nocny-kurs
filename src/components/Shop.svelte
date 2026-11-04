@@ -4,7 +4,8 @@
   import { actions } from '../stores/app';
   import { DICTS, fmt, t } from '../i18n';
   import { VEHICLES, WEAPONS } from '../game/data';
-  import { canBuyVehicle, canBuyWeapon, vehicleIndex } from '../game/engine';
+  import { canBuyVehicle, canBuyWeapon, fightChance, vehicleIndex } from '../game/engine';
+  import { PROTECT } from '../game/data';
   import type { GameState, Lang } from '../game/types';
 
   let { game, lang }: { game: GameState; lang: Lang } = $props();
@@ -33,9 +34,10 @@
 {/each}
 
 <div class="sec-h">{t(lang, 'shopProtect')}</div>
-<p class="note intro">{t(lang, 'shopProtectNote')}</p>
+<p class="note intro">{t(lang, 'shopProtectNote', { b: PROTECT.perExtra })}</p>
+<div class="protect" class:none={!game.weapons.length}>{t(lang, game.weapons.length ? 'protectNow' : 'protectNone', { p: fightChance(game) })}</div>
 {#each WEAPONS as w (w.id)}
-  {@const owned = w.id === game.weapon}
+  {@const owned = game.weapons.includes(w.id)}
   <div class="item" class:owned>
     <ItemIcon name={w.id} />
     <div class="grow">
@@ -52,6 +54,8 @@
 
 <style>
   .intro { margin: 0 4px 10px; }
+  .protect { margin: 0 4px 10px; font-weight: 800; color: var(--accent); font-size: 14px; }
+  .protect.none { color: var(--muted); font-weight: 700; }
   .item { display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; border: 2px solid transparent; }
   .item.owned { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
   .buy { border: 0; background: var(--accent); color: #0b1b19; font-weight: 800; border-radius: 12px; padding: 9px 12px; cursor: pointer; white-space: nowrap; }

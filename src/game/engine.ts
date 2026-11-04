@@ -2,7 +2,7 @@
  * Silnik gry: czyste funkcje (stan → nowy stan + efekty). Bez DOM, bez localStorage, bez Math.random.
  * Każda akcja klonuje stan wejściowy, więc wejście nigdy nie jest modyfikowane (cofanie ruchu = poprzedni stan).
  */
-import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, LOSS, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
+import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, LOSS, PROTECT, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
 import { pick, rng } from './rng';
 import type {
   CityId, Diff, Fx, GameState, GoodId, ItemId, Msg, Outcome, PoliceChoice, Rating, RobberyChoice, Sender, Src, TradeMode,
@@ -18,7 +18,7 @@ export function newGame(diff: Diff, seed = Date.now() | 0): GameState {
   const D = DIFFS[diff];
   const s: GameState = {
     v: 1, seed, diff, day: 1, maxDays: D.days, cash: START.cash, bank: 0, debt: D.debt, heat: START.heat,
-    city: START.city, cap: START.cap, vehicle: 'backpack', weapon: null, inv: {}, events: [], sat: {},
+    city: START.city, cap: START.cap, vehicle: 'backpack', weapons: [], inv: {}, events: [], sat: {},
     prices: {} as GameState['prices'], pharm: {} as GameState['pharm'],
     chat: [], unread: 0, tut: D.tut ? 0 : 4, rx: null, rxUnlocked: false,
     shortage: 0, canada: 0, teleOff: 0, traded: false, pending: null, over: false, debtPaidMsg: false, collectWarned: false,
@@ -189,7 +189,7 @@ export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
   if (s.tut >= 3 && used(s) > 0) {
     const chance = (0.06 + s.heat * 0.004 + c.police * 0.02) * DIFFS[s.diff].police * V[s.vehicle].police;
     if (rng(s) < chance) fx.push(...startPolice(s));
-    else if (rng(s) < ROBBERY_CHANCE * DIFFS[s.diff].police) s.pending = { kind: 'robbery', runP: V[s.vehicle].run, fightP: s.weapon ? W[s.weapon].fight : 0 };
+    else if (rng(s) < ROBBERY_CHANCE * DIFFS[s.diff].police) s.pending = { kind: 'robbery', runP: V[s.vehicle].run, fightP: fightChance(s) };
   }
   return bankruptCheck({ s, fx });
 }
@@ -245,7 +245,8 @@ export function resolvePolice(prev: GameState, choice: PoliceChoice): Outcome {
     s.heat = Math.min(100, s.heat + 15);
     body.push(m(key, { f }));
     if (loseShare(s, LOSS.policeCaught, true)) body.push(m('keptMed'));
-    if (s.weapon && !W[s.weapon].legal) { s.weapon = null; s.cash = Math.max(0, s.cash - GUN_FINE); body.push(m('gunLost', { f: GUN_FINE })); }
+    const illegal = s.weapons.filter((w) => !W[w].legal);
+    if (illegal.length) { s.weapons = s.weapons.filter((w) => W[w].legal); s.cash = Math.max(0, s.cash - GUN_FINE); body.push(m('gunLost', { f: GUN_FINE })); }
   };
   if (choice === 'run') {
     if (rng(s) * 100 < P.runP) { s.heat = Math.min(100, s.heat + 10); body.push(m('okRun')); } else caught();
@@ -281,7 +282,13 @@ export function resolveRobbery(prev: GameState, choice: RobberyChoice): Outcome 
   } else if (choice === 'run') {
     if (rng(s) * 100 < P.runP) body.push(m('robRunOk')); else lose(0, 'robRunFail');
   } else {
-    if (rng(s) * 100 < P.fightP) body.push(m('robFightOk')); else lose(LOSS.robFightCash, 'robFightFail');
+    if (rng(s) * 100 < P.fightP) body.push(m('robFightOk'));
+    else {
+      lose(LOSS.robFightCash, 'robFightFail');
+      // napastnicy zabierają najlepszą broń
+      const best = bestWeapon(s);
+      if (best) { s.weapons = s.weapons.filter((w) => w !== best); body.push(m('robLostWeapon', { w: best })); }
+    }
   }
   return bankruptCheck({ s, fx: [{ t: 'info', title: 'robTitle', body }] });
 }
@@ -300,12 +307,22 @@ export function buyVehicle(prev: GameState, id: VehicleId): Outcome {
   s.cap = V[id].cap;
   return { s, fx: [{ t: 'toast', msg: m('boughtGear', { item: id }) }] };
 }
-export const canBuyWeapon = (s: GameState, id: WeaponId) => s.weapon !== id && s.cash >= W[id].price;
+export const canBuyWeapon = (s: GameState, id: WeaponId) => !s.weapons.includes(id) && s.cash >= W[id].price;
+/** Najlepszy posiadany przedmiot ochrony */
+export function bestWeapon(s: GameState): WeaponId | null {
+  return s.weapons.reduce<WeaponId | null>((b, w) => (!b || W[w].fight > W[b].fight ? w : b), null);
+}
+/** Szansa obrony: najlepszy przedmiot + bonus za każdy kolejny (z limitem); 0 bez ochrony */
+export function fightChance(s: GameState): number {
+  const best = bestWeapon(s);
+  if (!best) return 0;
+  return Math.min(PROTECT.max, W[best].fight + PROTECT.perExtra * (s.weapons.length - 1));
+}
 export function buyWeapon(prev: GameState, id: WeaponId): Outcome {
   if (!canBuyWeapon(prev, id)) return { s: prev, fx: [] };
   const s = clone(prev);
   s.cash -= W[id].price;
-  s.weapon = id; // nowa broń zastępuje poprzednią
+  s.weapons = [...s.weapons, id]; // przedmioty się sumują
   return { s, fx: [{ t: 'toast', msg: m('boughtGear', { item: id }) }] };
 }
 

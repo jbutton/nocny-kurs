@@ -3,7 +3,7 @@ import { BORROW, COLLECT, DODGE, RX, V, W } from '../src/game/data';
 import {
   deposit, withdraw,
   borrow, borrowLimit, isBankrupt,
-  buyVehicle, buyWeapon, canBuyVehicle, clinicVisit, finish, newGame, repay, resolvePolice, resolveRobbery,
+  buyVehicle, buyWeapon, fightChance, canBuyVehicle, clinicVisit, finish, newGame, repay, resolvePolice, resolveRobbery,
   rxLeft, teleRenew, teleStatus, trade, tradeLimits, travel, used,
 } from '../src/game/engine';
 import { addEntry, BOARD_SIZE, forDiff } from '../src/game/leaderboard';
@@ -127,18 +127,29 @@ describe('sklep i napad', () => {
     expect(s2.cash).toBe(30000 - V.car.price);
     expect(canBuyVehicle(s2, 'scooter')).toBe(false);
   });
-  it('broń zastępuje poprzednią', () => {
+  it('ochrona się sumuje i każdą rzecz kupuje się raz', () => {
     let s = { ...afterTutorial(), cash: 10000 };
+    expect(fightChance(s)).toBe(0);
     s = buyWeapon(s, 'spray').s;
+    expect(fightChance(s)).toBe(W.spray.fight);
+    expect(buyWeapon(s, 'spray').s).toBe(s); // drugi raz nie da się kupić
+    s = buyWeapon(s, 'bat').s;
+    expect(fightChance(s)).toBe(W.bat.fight + 5);
     s = buyWeapon(s, 'gun').s;
-    expect(s.weapon).toBe('gun');
-    expect(s.cash).toBe(10000 - W.spray.price - W.gun.price);
+    expect(s.weapons).toEqual(['spray', 'bat', 'gun']);
+    expect(fightChance(s)).toBe(90);
+    expect(s.cash).toBe(10000 - W.spray.price - W.bat.price - W.gun.price);
+  });
+  it('przegrane starcie: napastnicy zabierają najlepszą broń', () => {
+    const s: GameState = { ...afterTutorial(), weapons: ['spray', 'bat'], inv: { weed: { qty: 4, avg: 20 } }, pending: { kind: 'robbery', runP: 0, fightP: 0.0001 } };
+    const r = resolveRobbery(s, 'fight');
+    expect(r.s.weapons).toEqual(['spray']);
   });
   it('policja konfiskuje nielegalną broń przy złapaniu', () => {
-    let s: GameState = { ...afterTutorial(), cash: 10000, weapon: 'gun', inv: { weed: { qty: 5, avg: 20 } } };
+    let s: GameState = { ...afterTutorial(), cash: 10000, weapons: ['bat', 'gun'], inv: { weed: { qty: 5, avg: 20 } } };
     s.pending = { kind: 'police', illegal: 5, legal: 0, runP: 0, bribeC: 300, bribeP: 50, canBluff: false };
     const r = resolvePolice(s, 'run'); // runP 0 → złapany
-    expect(r.s.weapon).toBeNull();
+    expect(r.s.weapons).toEqual(['bat']); // legalny kij zostaje
     expect(r.s.inv.weed?.qty).toBe(2); // zabrali połowę
   });
   it('napad: oddanie ćwierci towaru, nieudana ucieczka = połowa', () => {

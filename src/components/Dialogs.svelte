@@ -12,7 +12,7 @@
   import { actions, type Dialog } from '../stores/app';
   import { DICTS, fmt, t, tm } from '../i18n';
   import { C, DODGE, RX } from '../game/data';
-  import { canVisitClinic, rankOf } from '../game/engine';
+  import { bestWeapon, canVisitClinic, rankOf } from '../game/engine';
   import { forDiff, NICK_MAX, type BoardEntry } from '../game/leaderboard';
   import type { Diff, GameState, Lang } from '../game/types';
 
@@ -40,8 +40,8 @@
     <div class="body">{t(lang, 'robText')}</div>
     <button class="btn sec" onclick={() => actions.robbery('give')}>{t(lang, 'robGiveBtn')}<small>{t(lang, 'robGiveSub')}</small></button>
     <button class="btn sec" onclick={() => actions.robbery('run')}>{t(lang, 'robRun')}<small>{t(lang, 'robRunSub', { p: P.runP })}</small></button>
-    {#if P.fightP && game.weapon}
-      <button class="btn" onclick={() => actions.robbery('fight')}>{t(lang, 'robFight', { w: game.weapon })}<small>{t(lang, 'robFightSub', { p: P.fightP })}</small></button>
+    {#if P.fightP && bestWeapon(game)}
+      <button class="btn" onclick={() => actions.robbery('fight')}>{t(lang, 'robFight', { w: bestWeapon(game) ?? '' })}<small>{t(lang, 'robFightSub', { p: P.fightP })}</small></button>
     {:else}
       <p class="note">{t(lang, 'robNoWeapon')}</p>
     {/if}

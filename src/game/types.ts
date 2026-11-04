@@ -79,7 +79,8 @@ export interface GameState {
   city: CityId;
   cap: number;
   vehicle: VehicleId;
-  weapon: WeaponId | null;
+  /** posiadana ochrona — każdy przedmiot kupuje się raz i zostaje */
+  weapons: WeaponId[];
   inv: Partial<Record<ItemId, Holding>>;
   events: MarketEvent[];
   /** nasycenie rynku sprzedażą gracza, klucz: city+good */

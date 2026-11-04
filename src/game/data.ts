@@ -75,6 +75,8 @@ export const WEAPONS: Weapon[] = [
   { id: 'gun', price: 6000, fight: 80, legal: false },
 ];
 export const GUN_FINE = 1000;
+/** Ochrona się sumuje: najlepszy przedmiot + bonus za każdy kolejny, z limitem */
+export const PROTECT = { perExtra: 5, max: 90 };
 /** Jazda na gapę: szansa na kanara i wysokość mandatu */
 export const DODGE = { chance: 0.3, fine: 150 };
 /** Pożyczka od Zbycha: limit długu = max(capMult × dług startowy, worthMult × majątek) */
