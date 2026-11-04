@@ -1,6 +1,7 @@
 <script lang="ts">
   import ItemIcon from './icons/ItemIcon.svelte';
   import Stars from './icons/Stars.svelte';
+  import LastDay from './LastDay.svelte';
   import Siren from '@lucide/svelte/icons/siren';
   import { actions } from '../stores/app';
   import { DICTS, t } from '../i18n';
@@ -13,7 +14,7 @@
   const last = $derived(game.day === game.maxDays);
 </script>
 
-{#if last}<div class="tip">⏰ {t(lang, 'lastDay')}</div>{/if}
+{#if last}<LastDay {lang} />{/if}
 <div class="h"><span>{t(lang, 'travelTo')}</span></div>
 {#each [...CITIES].sort((a, b) => distanceKm(game.city, a.id) - distanceKm(game.city, b.id)) as c (c.id)}
   {@const here = c.id === game.city}

@@ -112,10 +112,11 @@ export function trade(prev: GameState, item: ItemId, mode: TradeMode, n: number,
     it.qty -= n;
     s.cash += p * n;
     if (it.qty === 0) delete s.inv[item];
-    const mk: GoodId = item === MED.id ? 'weed' : item; // sprzedaż suszu aptecznego zbija cenę ulicznej marihuany
+    // Cena w ciągu dnia się nie zmienia. Sprzedaż „nasyca” rynek i obniża cenę dopiero od kolejnych dni
+    // (genPrices; efekt maks. 50%, słabnie o połowę co dzień, cena nigdy poniżej 30% minimum).
+    const mk: GoodId = item === MED.id ? 'weed' : item; // sprzedaż suszu aptecznego nasyca rynek ulicznej marihuany
     const k = s.city + mk;
     s.sat[k] = Math.min(ECON.satMax, (s.sat[k] ?? 0) + n * ECON.satPerUnit);
-    s.prices[s.city][mk] = Math.round(s.prices[s.city][mk] * (1 - n * ECON.satPerUnit));
     if (item === MED.id) s.heat = Math.min(100, s.heat + 3);
     else if (n > ECON.bigTrade) s.heat = Math.min(100, s.heat + 5);
   }

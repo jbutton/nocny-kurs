@@ -37,6 +37,16 @@ describe('handel', () => {
     expect(s2.inv.weed).toBeUndefined();
     expect(s2.cash).toBe(2000);
   });
+  it('cena nie zmienia się po sprzedaży w tym samym dniu (i nigdy nie jest ujemna)', () => {
+    let s: GameState = { ...afterTutorial(), cash: 0, cap: 700, inv: { ecstasy: { qty: 400, avg: 10 } } };
+    const before = s.prices.waw.ecstasy;
+    s = trade(s, 'ecstasy', 'sell', 400).s;
+    expect(s.prices.waw.ecstasy).toBe(before);
+    expect(s.cash).toBe(400 * before);
+    // następnego dnia rynek jest nasycony, ale cena zostaje dodatnia
+    s = travel(travel({ ...s, cash: 1000 }, 'lod').s, 'waw').s;
+    expect(s.prices.waw.ecstasy).toBeGreaterThan(0);
+  });
   it('odrzuca transakcję ponad limit', () => {
     const s0 = newGame('normal', 3);
     expect(trade(s0, 'weed', 'buy', 1000).s).toBe(s0);

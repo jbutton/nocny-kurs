@@ -53,7 +53,7 @@ export const pl = {
     travelTo: 'Dokąd jedziesz?', ticket: 'bilet {p} zł', here: 'jesteś tutaj', clinicHere: 'klinika',
     travelTitle: 'Jedziesz do: {city}', travelText: 'Podróż trwa 1 dzień. Dług urośnie o 7% (≈{i} zł).',
     go: 'Jedź', cancel: 'Zostań',
-    lastDay: 'To ostatni dzień! Sprzedaj towar, bo po zakończeniu nic nie jest wart.',
+    lastDayTitle: 'Ostatni dzień!', lastDay: 'Sprzedaj towar i spłać dług, a potem zakończ grę. Niesprzedany towar nic nie jest wart.',
     finish: 'Zakończ grę',
     bank: 'Bank', bankNote: 'Bezpieczne przy napadzie i aresztowaniu. +1% dziennie.',
     deposit: 'Wpłać', withdraw: 'Wypłać',

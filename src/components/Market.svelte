@@ -1,5 +1,6 @@
 <script lang="ts">
   import ItemIcon from './icons/ItemIcon.svelte';
+  import LastDay from './LastDay.svelte';
   import { actions } from '../stores/app';
   import { DICTS, fmt, t } from '../i18n';
   import { GOODS, C, MED, RX } from '../game/data';
@@ -14,6 +15,7 @@
   const pharmKey = (r: Rating) => (r === 'cheap' ? 'pharmCheap' : r === 'exp' ? 'pharmExp' : 'pharmNorm');
 </script>
 
+{#if game.day === game.maxDays}<LastDay {lang} />{/if}
 <div class="h"><span>{t(lang, 'pricesIn', { city: game.city })}</span><span>{t(lang, 'tapHint')}</span></div>
 {#if game.rxUnlocked}<div class="sec-h">{t(lang, 'street')}</div>{/if}
 
@@ -60,7 +62,4 @@
   {/if}
 {/if}
 
-{#if game.day === game.maxDays}
-  <div class="tip">⏰ {t(lang, 'lastDay')}</div>
-  <button class="btn center" onclick={actions.finish}>{t(lang, 'finish')}</button>
-{/if}
+

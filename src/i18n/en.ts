@@ -55,7 +55,7 @@ export const en: Dict = {
     travelTo: 'Where to?', ticket: 'ticket {p} zł', here: 'you are here', clinicHere: 'clinic',
     travelTitle: 'Travel to: {city}', travelText: 'Takes 1 day. Your debt grows by 7% (≈{i} zł).',
     go: 'Go', cancel: 'Stay',
-    lastDay: "Last day! Sell your stuff, it's worth nothing after the game ends.",
+    lastDayTitle: 'Last day!', lastDay: "Sell your goods and pay off your debt, then finish the game. Unsold goods are worth nothing.",
     finish: 'Finish game',
     bank: 'Bank', bankNote: 'Safe from robbery and arrest. +1% per day.',
     deposit: 'Deposit', withdraw: 'Withdraw',

@@ -125,3 +125,13 @@ test('auto bez kasy na paliwo: pożyczka i jazda, bez opcji na gapę', async ({ 
   await page.getByRole('button', { name: /Pożycz 119 zł od Zbycha i jedź/ }).click();
   await expect(page.locator('.day')).toContainText('Dzień 2');
 });
+
+test('ostatni dzień: przycisk zakończenia na Rynku i na Mapie', async ({ page }) => {
+  await page.getByRole('button', { name: /^Normalny/ }).click();
+  await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ss_save_v3')!); Object.assign(s, { day: 30, tut: 4 }); localStorage.setItem('ss_save_v3', JSON.stringify(s)); });
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Zakończ grę' })).toBeVisible();
+  await page.getByRole('button', { name: 'Mapa' }).click();
+  await page.getByRole('button', { name: 'Zakończ grę' }).click();
+  await expect(page.getByText('Koniec gry')).toBeVisible();
+});
