@@ -1,0 +1,86 @@
+:root {
+  --bg: #0f1117; --phone: #171a22; --card: #21252f; --card2: #2a2f3b; --line: #323846; --line-strong: #3d4454;
+  --text: #f2f4f8; --muted: #9aa3b5; --accent: #5eead4; --accent2: #818cf8;
+  --good: #4ade80; --bad: #f87171; --warn: #fbbf24; --radius: 18px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; height: 100%; color: var(--text);
+  background: radial-gradient(1200px 600px at 50% -10%, #2b2350 0%, var(--bg) 60%);
+  font-family: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+body { display: block; }
+.stage { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 12px 0; }
+.brand { display: flex; justify-content: center; }
+@media (max-width: 480px) { .stage { padding: 0; gap: 0; } .brand { display: none; } }
+button { font: inherit; }
+
+.phone {
+  position: relative; z-index: 1; width: 400px; height: min(860px, calc(100vh - 100px)); background: var(--phone); border-radius: 44px; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 0 10px #0b0c10, 0 0 0 11px #333; display: flex; flex-direction: column;
+}
+@media (max-width: 480px) { .phone { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; } }
+
+.content {
+  flex: 1; overflow-y: auto; padding: 6px 14px 24px; scrollbar-width: none; overscroll-behavior: contain;
+  /* bez paska przewijania: delikatne wygaszenie u dołu podpowiada, że jest więcej */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+}
+.content.roomy { padding-bottom: 150px; } /* miejsce na dymek mentora */
+/* jak w telefonie: przewijanie działa, ale bez widocznego paska */
+.content::-webkit-scrollbar { display: none; }
+/* pola liczbowe bez strzałek */
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.h { font-size: 13px; color: var(--muted); margin: 10px 4px 8px; display: flex; justify-content: space-between; }
+.sec-h { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 18px 4px 8px; display: flex; align-items: center; gap: 6px; }
+.note { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.tip { font-size: 12px; color: var(--muted); text-align: center; margin: 14px 0 4px; }
+
+/* wiersz listy */
+.row {
+  width: 100%; display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: var(--radius); padding: 8px 14px;
+  margin-bottom: 5px; cursor: pointer; border: 2px solid transparent; transition: background .15s; color: inherit; text-align: left;
+}
+.row:hover:not(:disabled) { background: var(--card2); }
+.row:disabled { opacity: .5; cursor: default; }
+.row.pulse { border-color: var(--accent); animation: pulse 1.4s infinite; }
+.row.alt { background: #1d2a2a; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(94, 234, 212, .15); } }
+.grow { flex: 1; min-width: 0; }
+.name { font-weight: 700; }
+.sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.own { color: var(--accent); }
+.price { text-align: right; font-weight: 800; font-size: 16px; white-space: nowrap; }
+
+/* etykiety cen: kolorowa kropka + tekst (nie tylko kolor, dla daltonistów) */
+.tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; margin-top: 3px; }
+.tag::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.tag.cheap { background: rgba(74, 222, 128, .15); color: var(--good); }
+.tag.exp { background: rgba(248, 113, 113, .15); color: var(--bad); }
+.tag.norm { background: var(--card2); color: var(--muted); }
+.tag.norm::before { display: none; }
+.tag.med { background: rgba(129, 140, 248, .18); color: var(--accent2); }
+
+/* przyciski */
+.btn {
+  width: 100%; border: 0; border-radius: 16px; padding: 15px; font-size: 16px; font-weight: 800; cursor: pointer;
+  background: var(--accent); color: #0b1b19; margin-top: 8px; text-align: left; display: block;
+}
+.btn.center { text-align: center; }
+.btn.sec { background: var(--card2); color: var(--text); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn small { display: block; font-weight: 600; font-size: 12px; opacity: .75; margin-top: 2px; }
+
+/* karty portfela/sklepu */
+.wcard { background: var(--card); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+.wcard .big { font-size: 24px; font-weight: 900; margin: 4px 0 10px; }
+.row2 { display: flex; gap: 8px; }
+.row2 .btn { margin: 0; padding: 11px; font-size: 14px; text-align: center; }
+
+/* nakładki */
+.overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, .55); display: flex; align-items: flex-end; z-index: 20; animation: fade .15s; }
+.overlay.center { align-items: center; padding: 20px; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes up { from { transform: translateY(40px); opacity: 0; } }
+@keyframes down { from { transform: translateY(-20px); opacity: 0; } }

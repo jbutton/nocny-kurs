@@ -1,0 +1,75 @@
+---
+/**
+ * Wspólny szkielet strony gry dla PL (/) i EN (/en/).
+ * Osobne tytuły, opisy i hreflang, żeby gra była widoczna w Google po polsku i po angielsku.
+ */
+import Game from '../components/Game.svelte';
+import '../styles/global.css';
+import '@fontsource/bungee/latin-ext.css';
+
+interface Props {
+  lang: 'pl' | 'en';
+  title: string;
+  description: string;
+}
+const { lang, title, description } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+const site = Astro.site!.toString().replace(/\/$/, '');
+const urls = { pl: `${site}${base}`, en: `${site}${base}en/` };
+const og = `${site}${base}og.png`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoGame',
+  name: lang === 'pl' ? 'Nocny Kurs' : 'Night Run',
+  alternateName: lang === 'pl' ? 'Night Run' : 'Nocny Kurs',
+  description,
+  url: urls[lang],
+  inLanguage: lang,
+  genre: ['Simulation', 'Strategy', 'Trading'],
+  gamePlatform: ['Web browser', 'Mobile'],
+  applicationCategory: 'Game',
+  operatingSystem: 'Any',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'PLN' },
+  contentRating: '18+',
+};
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f1117" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={urls[lang]} />
+    <link rel="alternate" hreflang="pl" href={urls.pl} />
+    <link rel="alternate" hreflang="en" href={urls.en} />
+    <link rel="alternate" hreflang="x-default" href={urls.pl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={urls[lang]} />
+    <meta property="og:image" content={og} />
+    <meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <Game client:only="svelte" pageLang={lang} base={base} />
+    <!-- Treść statyczna: widoczna pod grą, czytelna dla wyszukiwarek -->
+    <main class="about">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  .about { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; padding: 40px 20px 60px; color: var(--muted); line-height: 1.6; font-size: 15px; }
+  .about h1 { color: var(--text); font-size: 24px; margin: 0 0 8px; }
+  .about h2 { color: var(--text); font-size: 18px; margin: 28px 0 6px; }
+  .about a { color: var(--accent); }
+  .about ul { padding-left: 20px; }
+  .about .age { display: inline-block; border: 1px solid var(--line-strong); border-radius: 8px; padding: 2px 8px; font-size: 12px; font-weight: 800; color: var(--warn); }
+</style>
