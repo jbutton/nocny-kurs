@@ -26,10 +26,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npx tsc -p worker/tsconfig.json
 
   build:
     needs: test
     runs-on: ubuntu-latest
+    env:
+      # adres API rankingu online (zmienna repozytorium); pusty = tylko ranking lokalny
+      PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
     steps:
       - uses: actions/checkout@v5
       - uses: withastro/action@v3

@@ -2,6 +2,7 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
   import Logo from './Logo.svelte';
+  import Board from './Board.svelte';
   import Siren from '@lucide/svelte/icons/siren';
   import ShieldAlert from '@lucide/svelte/icons/shield-alert';
   import HandCoins from '@lucide/svelte/icons/hand-coins';
@@ -113,31 +114,7 @@
     {/if}
   </Modal>
 {:else if dialog?.kind === 'board'}
-  {@const list = forDiff(board, dialog.diff)}
-  {@const pos = list.findIndex((x) => x.id === dialog.hl)}
-  <Modal title={t(lang, 'boardTitle')} icon={Trophy} tone="warn" onclose={dialog.afterEnd ? undefined : actions.closeDialog}>
-    <div class="tabs">
-      {#each diffs as df (df)}
-        <button class:on={df === dialog.diff} onclick={() => dialog?.kind === 'board' && actions.showBoard(df, dialog.hl, dialog.afterEnd)}>{d.diffName[df]}</button>
-      {/each}
-    </div>
-    {#if pos >= 0}<div class="place">{@html t(lang, 'place', { n: pos + 1 })}</div>{/if}
-    {#each list as x, i (x.id)}
-      <div class="brow" class:me={x.id === dialog.hl}>
-        <span class="pl">{medal(i)}</span>
-        <span class="nm">{x.name}<small>{d.ranks[rankOf(x.score)]} · {x.date}</small></span>
-        <span class="sc">{fmt(lang, x.score)} zł</span>
-      </div>
-    {:else}
-      <p class="note">{t(lang, 'boardEmpty')}</p>
-    {/each}
-    <p class="note">{t(lang, 'boardLocal')}</p>
-    {#if dialog.afterEnd}
-      <button class="btn center" onclick={actions.askDifficulty}>{t(lang, 'again')}</button>
-    {:else}
-      <button class="btn center" onclick={actions.closeDialog}>{t(lang, 'close')}</button>
-    {/if}
-  </Modal>
+  <Board {dialog} {lang} {board} />
 {/if}
 
 <style>

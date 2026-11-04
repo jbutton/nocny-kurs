@@ -1,3 +1,5 @@
+import type { Act } from './replay';
+
 export type Lang = 'pl' | 'en';
 export type Diff = 'easy' | 'normal' | 'hard';
 export type GoodId = 'weed' | 'hash' | 'shrooms' | 'speed' | 'mefa' | 'ecstasy' | 'coke' | 'heroin';
@@ -68,7 +70,10 @@ export type Pending = PolicePending | RobberyPending;
 
 export interface GameState {
   v: 1;
+  /** stan generatora losowego (zmienia się w trakcie gry) */
   seed: number;
+  /** seed początkowy gry — razem z dziennikiem ruchów pozwala odtworzyć całą grę */
+  seed0: number;
   diff: Diff;
   day: number;
   maxDays: number;
@@ -103,6 +108,8 @@ export interface GameState {
   debtPaidMsg: boolean;
   /** Zbychu już ostrzegł przed windykacją */
   collectWarned: boolean;
+  /** dziennik ruchów (do odtworzenia i weryfikacji wyniku w rankingu online) */
+  log: Act[];
 }
 
 /** Efekty uboczne dla UI (toast, okno z informacją, koniec gry) */

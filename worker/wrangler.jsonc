@@ -1,0 +1,13 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "nocny-kurs-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": false },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://jbutton.github.io,http://localhost:4321"
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "nocny-kurs", "database_id": "79c1b0e5-e862-41ac-92d6-81019327f318", "migrations_dir": "migrations" }
+  ]
+}

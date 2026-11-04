@@ -24,4 +24,15 @@ export function addEntry(board: BoardEntry[], e: BoardEntry): BoardEntry[] {
 export const forDiff = (board: BoardEntry[], diff: Diff) =>
   board.filter((x) => x.diff === diff).sort((a, b) => b.score - a.score);
 
-export const cleanNick = (raw: string, fallback: string) => (raw.trim() || fallback).slice(0, NICK_MAX);
+// prosty filtr wulgaryzmów w nickach (PL/EN, po normalizacji znaków)
+const BAD = ['kurw', 'chuj', 'huj', 'jeb', 'pierdol', 'cip', 'pizd', 'fuck', 'shit', 'cunt', 'nigg', 'fag', 'dziwk', 'szmat', 'pedal', 'hitler'];
+const normalize = (s: string) =>
+  s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l')
+    .replace(/0/g, 'o').replace(/1/g, 'i').replace(/3/g, 'e').replace(/4/g, 'a').replace(/5/g, 's').replace(/[^a-z]/g, '');
+export const isBadNick = (s: string) => BAD.some((w) => normalize(s).includes(w));
+
+/** Nick do rankingu: przycięty, bez znaków sterujących, bez wulgaryzmów (wtedy zastępczy) */
+export function cleanNick(raw: string, fallback: string): string {
+  const n = raw.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, NICK_MAX);
+  return !n || isBadNick(n) ? fallback : n;
+}

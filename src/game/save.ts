@@ -11,6 +11,7 @@ export function parseSave(raw: string | null): GameState | null {
       // migracja starszych zapisów: pojedyncza broń → lista posiadanej ochrony
       const old = s as GameState & { weapon?: GameState['weapons'][number] | null };
       if (!Array.isArray(s.weapons)) { s.weapons = old.weapon ? [old.weapon] : []; delete old.weapon; }
+      if (!Array.isArray(s.log)) s.log = []; // starsze zapisy nie mają dziennika (nie trafią do rankingu online)
       return s;
     }
   } catch {

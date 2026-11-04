@@ -4,12 +4,14 @@
  */
 import { createStore } from '@tanstack/svelte-store';
 import * as E from '../game/engine';
+import { act, type Act } from '../game/replay';
 import { addEntry, cleanNick, type BoardEntry } from '../game/leaderboard';
 import { parseSave, SAVE_KEY } from '../game/save';
 import type {
   CityId, Diff, GameState, ItemId, Lang, Msg, Outcome, PoliceChoice, RobberyChoice, Src, VehicleId, WeaponId,
 } from '../game/types';
 import { t } from '../i18n';
+import { onlineEnabled, queryClient, submitScore } from '../lib/api';
 
 export type Tab = 'market' | 'map' | 'shop' | 'chat' | 'wallet';
 export interface Sheet { item: ItemId; src: Src }
@@ -20,7 +22,10 @@ export type Dialog =
   | { kind: 'clinic' }
   | { kind: 'info'; title: string; body: Msg[] }
   | { kind: 'end'; score: number; diff: Diff; bankrupt?: boolean }
-  | { kind: 'board'; diff: Diff; hl: number; afterEnd: boolean };
+  | { kind: 'board'; diff: Diff; hl: number; afterEnd: boolean; scope: BoardScope; online?: OnlineStatus };
+export type BoardScope = 'online' | 'local';
+/** Stan wysyłki wyniku do rankingu online (widoczny w oknie rankingu po zakończeniu gry) */
+export type OnlineStatus = { status: 'sending' } | { status: 'ok'; id: number; place: number } | { status: 'error'; reason: string };
 export interface Toast { id: number; msg: Msg; undo: boolean }
 
 export interface AppState {
@@ -105,6 +110,8 @@ function apply(o: Outcome, extra: Partial<AppState> = {}) {
   });
 }
 const g = () => app.state.game;
+/** Ruch gracza: silnik + dziennik ruchów */
+const play = (a: Act) => act(g(), a);
 
 export const actions = {
   setLang: (lang: Lang) => set({ lang }),
@@ -113,46 +120,47 @@ export const actions = {
   closeSheet: () => set({ sheet: null }),
   closeDialog: () => set({ dialog: null }),
   dismissToast: (id: number) => set((s) => (s.toast?.id === id ? { toast: null } : {})),
-  skipTutorial: () => set((s) => ({ game: E.skipTutorial(s.game) })),
+  skipTutorial: () => apply(play(['sk'])),
 
   trade: (item: ItemId, mode: 'buy' | 'sell', n: number, src: Src) => {
     const prev = g();
-    const o = E.trade(prev, item, mode, n, src);
+    const o = play(['t', item, mode, n, src]);
     if (o.s !== prev) apply(o, { sheet: null, undo: prev });
   },
   undo: () => set((s) => (s.undo ? { game: s.undo, undo: null, toast: null } : {})),
 
   askTravel: (to: CityId) => set({ dialog: { kind: 'travel', to } }),
   travel: (to: CityId, dodge = false) => {
-    const o = E.travel(g(), to, dodge);
+    const o = play(['v', to, dodge]);
     apply(o, { dialog: null, sheet: null, tab: 'market', undo: null });
     if (o.s.day > o.s.maxDays) actions.finish();
   },
   borrowAndTravel: (to: CityId) => {
-    const o = E.borrowAndTravel(g(), to);
+    const o = play(['bt', to]);
     if (o.s !== g()) apply(o, { dialog: null, sheet: null, tab: 'market', undo: null });
   },
-  sellVehicle: () => apply(E.sellVehicle(g())),
-  finish: () => apply(E.finish(g()), { sheet: null }),
-  police: (c: PoliceChoice) => apply(E.resolvePolice(g(), c)),
-  robbery: (c: RobberyChoice) => apply(E.resolveRobbery(g(), c)),
+  sellVehicle: () => apply(play(['sv'])),
+  finish: () => apply(play(['f']), { sheet: null }),
+  police: (c: PoliceChoice) => apply(play(['p', c])),
+  robbery: (c: RobberyChoice) => apply(play(['r', c])),
 
   askClinic: () => set({ dialog: { kind: 'clinic' } }),
-  clinicVisit: () => apply(E.clinicVisit(g()), { dialog: null }),
-  teleRenew: () => apply(E.teleRenew(g())),
-  repay: (amount: number) => apply(E.repay(g(), amount)),
-  borrow: (amount: number) => apply(E.borrow(g(), amount)),
-  deposit: (amount: number) => apply(E.deposit(g(), amount)),
-  withdraw: (amount: number) => apply(E.withdraw(g(), amount)),
-  buyVehicle: (id: VehicleId) => apply(E.buyVehicle(g(), id)),
-  buyWeapon: (id: WeaponId) => apply(E.buyWeapon(g(), id)),
+  clinicVisit: () => apply(play(['c']), { dialog: null }),
+  teleRenew: () => apply(play(['tr'])),
+  repay: (amount: number) => apply(play(['rp', amount])),
+  borrow: (amount: number) => apply(play(['b', amount])),
+  deposit: (amount: number) => apply(play(['d', amount])),
+  withdraw: (amount: number) => apply(play(['w', amount])),
+  buyVehicle: (id: VehicleId) => apply(play(['bv', id])),
+  buyWeapon: (id: WeaponId) => apply(play(['bw', id])),
 
   askNewGame: () => set({ dialog: { kind: 'newGame' } }),
   askDifficulty: () => set({ dialog: { kind: 'difficulty' } }),
   startGame: (diff: Diff) =>
     set({ game: E.newGame(diff), dialog: null, sheet: null, toast: null, undo: null, tab: 'market' }),
 
-  showBoard: (diff: Diff, hl = 0, afterEnd = false) => set({ dialog: { kind: 'board', diff, hl, afterEnd } }),
+  showBoard: (diff: Diff, hl = 0, afterEnd = false, scope: BoardScope = onlineEnabled() ? 'online' : 'local') =>
+    set((s) => ({ dialog: { kind: 'board', diff, hl, afterEnd, scope, online: s.dialog?.kind === 'board' ? s.dialog.online : undefined } })),
   saveScore: (rawNick: string) => {
     const s = app.state;
     if (s.dialog?.kind !== 'end') return;
@@ -161,6 +169,18 @@ export const actions = {
     const board = addEntry(s.board, entry);
     ls.set(BOARD_KEY, JSON.stringify(board));
     ls.set(NICK_KEY, name);
-    set({ board, nick: name, dialog: { kind: 'board', diff: entry.diff, hl: entry.id, afterEnd: true } });
+    const g0 = s.game;
+    // gra nadaje się do rankingu online, jeśli ma pełny dziennik ruchów od początku
+    const canSubmit = onlineEnabled() && typeof g0.seed0 === 'number' && g0.log.length > 0;
+    set({
+      board, nick: name,
+      dialog: { kind: 'board', diff: entry.diff, hl: entry.id, afterEnd: true, scope: canSubmit ? 'online' : 'local', online: canSubmit ? { status: 'sending' } : undefined },
+    });
+    if (!canSubmit) return;
+    void submitScore({ name, diff: g0.diff, seed: g0.seed0, log: g0.log }).then((r) => {
+      const online: OnlineStatus = r.ok ? { status: 'ok', id: r.id, place: r.place } : { status: 'error', reason: r.reason };
+      set((st) => (st.dialog?.kind === 'board' ? { dialog: { ...st.dialog, online } } : {}));
+      if (r.ok) void queryClient.invalidateQueries({ queryKey: ['scores'] });
+    });
   },
 };

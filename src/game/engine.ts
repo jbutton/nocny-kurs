@@ -17,11 +17,11 @@ const m = (key: string, vars?: Msg['vars']): Msg => ({ key, vars });
 export function newGame(diff: Diff, seed = Date.now() | 0): GameState {
   const D = DIFFS[diff];
   const s: GameState = {
-    v: 1, seed, diff, day: 1, maxDays: D.days, cash: START.cash, bank: 0, debt: D.debt, heat: START.heat,
+    v: 1, seed, seed0: seed, diff, day: 1, maxDays: D.days, cash: START.cash, bank: 0, debt: D.debt, heat: START.heat,
     city: START.city, cap: START.cap, vehicle: 'backpack', weapons: [], inv: {}, events: [], sat: {},
     prices: {} as GameState['prices'], pharm: {} as GameState['pharm'],
     chat: [], unread: 0, tut: D.tut ? 0 : 4, rx: null, rxUnlocked: false,
-    shortage: 0, canada: 0, teleOff: 0, traded: false, pending: null, over: false, debtPaidMsg: false, collectWarned: false,
+    shortage: 0, canada: 0, teleOff: 0, traded: false, pending: null, over: false, debtPaidMsg: false, collectWarned: false, log: [],
   };
   genPrices(s);
   if (D.tut) {

@@ -2,6 +2,8 @@
 <script lang="ts">
   import { useSelector } from '@tanstack/svelte-store';
   import { app } from '../stores/app';
+  import { setQueryClientContext } from '@tanstack/svelte-query';
+  import { queryClient } from '../lib/api';
   import StatusBar from './StatusBar.svelte';
   import NavBar from './NavBar.svelte';
   import Market from './Market.svelte';
@@ -18,6 +20,8 @@
 
   // props z Astro: język strony i ścieżka bazowa (store czyta je z <html lang> i import.meta.env)
   let { pageLang: _pl, base: _b }: { pageLang?: string; base?: string } = $props();
+  // TanStack Query (ranking online)
+  setQueryClientContext(queryClient);
   const st = useSelector(app);
   const s = $derived(st.current);
   const g = $derived(s.game);
