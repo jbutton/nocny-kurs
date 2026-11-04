@@ -5,7 +5,7 @@
   import { actions } from '../stores/app';
   import { DICTS, t } from '../i18n';
   import { CITIES } from '../game/data';
-  import { travelCost } from '../game/engine';
+  import { distanceKm, travelCost } from '../game/engine';
   import type { GameState, Lang } from '../game/types';
 
   let { game, lang }: { game: GameState; lang: Lang } = $props();
@@ -15,13 +15,13 @@
 
 {#if last}<div class="tip">⏰ {t(lang, 'lastDay')}</div>{/if}
 <div class="h"><span>{t(lang, 'travelTo')}</span></div>
-{#each CITIES as c (c.id)}
+{#each [...CITIES].sort((a, b) => distanceKm(game.city, a.id) - distanceKm(game.city, b.id)) as c (c.id)}
   {@const here = c.id === game.city}
   <button class="row" class:pulse={game.tut === 1 && c.id === 'krk'} disabled={here || last} onclick={() => actions.askTravel(c.id)}>
     <ItemIcon name={here ? 'here' : 'city'} />
     <div class="grow">
       <div class="name">{d.cities[c.id]}</div>
-      <div class="sub">{#if here}{t(lang, 'here')}{:else}{@const tc = travelCost(game, c.id)}{t(lang, tc.kind === 'fuel' ? 'fuel' : 'ticket', { p: tc.cost })}{/if}{game.rxUnlocked && c.clinic ? ' · ' + t(lang, 'clinicHere') : ''}</div>
+      <div class="sub">{#if here}{t(lang, 'here')}{:else}{@const tc = travelCost(game, c.id)}{t(lang, tc.kind === 'fuel' ? 'fuel' : 'ticket', { p: tc.cost })} · {tc.km} km{/if}{game.rxUnlocked && c.clinic ? ' · ' + t(lang, 'clinicHere') : ''}</div>
     </div>
     <div class="pol" title={t(lang, 'polLvlTip', { n: c.police })}>
       <span class="cap"><Siren size={11} strokeWidth={2.4} /> {t(lang, 'polLvl')}</span>

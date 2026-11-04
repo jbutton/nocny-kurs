@@ -105,7 +105,7 @@ export const pl = {
     shopProtectNote: 'Przydaje się przy napadzie na trasie. Kupione rzeczy zostają z tobą: liczy się najlepsza, a każda kolejna dodaje +{b}% obrony. Po przegranym starciu napastnicy zabierają twoją najlepszą broń.',
     protectNow: 'Twoja obrona przy napadzie: ~{p}%', protectNone: 'Nie masz jeszcze żadnej ochrony.',
     robLostWeapon: 'Zabrali ci też: {w}.',
-    capLbl: 'miejsce: {n}', fuelLbl: 'paliwo ×{f} biletu', trainLbl: 'pociągiem', runLbl: 'ucieczka ~{p}%', fightLbl: 'obrona ~{p}%', illegalLbl: 'nielegalne',
+    capLbl: 'miejsce: {n}', fuelLbl: 'pali {f} l/100 km', trainLbl: 'pociągiem', runLbl: 'ucieczka ~{p}%', fightLbl: 'obrona ~{p}%', illegalLbl: 'nielegalne',
     vanLbl: 'częstsze kontrole', owned: 'masz', buyFor: 'Kup za {c} zł', boughtGear: 'Kupiono: {item}',
     gunLost: 'Policja zabrała ci pistolet i dołożyła {f} zł grzywny za nielegalną broń.',
     robTitle: 'Napad!', robText: 'W ciemnej bramie zaczepia cię dwóch typów: „Dawaj towar!”. Co robisz?',

@@ -14,7 +14,9 @@ export interface City {
   exp: GoodId[];
   /** poziom policji 1..3 */
   police: number;
-  ticket: number;
+  /** współrzędne (do liczenia odległości) */
+  lat: number;
+  lon: number;
   clinic?: boolean;
 }
 
@@ -30,14 +32,14 @@ export const GOODS: Good[] = [
 ];
 
 export const CITIES: City[] = [
-  { id: 'waw', cheap: [], exp: ['coke', 'ecstasy'], police: 3, ticket: 60, clinic: true },
-  { id: 'krk', cheap: [], exp: ['weed', 'ecstasy'], police: 2, ticket: 50, clinic: true },
-  { id: 'gda', cheap: ['coke'], exp: ['speed'], police: 2, ticket: 70, clinic: true },
-  { id: 'szc', cheap: ['coke', 'heroin'], exp: [], police: 1, ticket: 80 },
-  { id: 'wro', cheap: ['ecstasy'], exp: ['speed'], police: 2, ticket: 60, clinic: true },
-  { id: 'poz', cheap: ['weed'], exp: ['coke'], police: 1, ticket: 55, clinic: true },
-  { id: 'lod', cheap: ['speed', 'mefa'], exp: [], police: 1, ticket: 40 },
-  { id: 'kat', cheap: ['speed'], exp: ['weed', 'mefa'], police: 2, ticket: 50 },
+  { id: 'waw', cheap: [], exp: ['coke', 'ecstasy'], police: 3, lat: 52.23, lon: 21.01, clinic: true },
+  { id: 'krk', cheap: [], exp: ['weed', 'ecstasy'], police: 2, lat: 50.06, lon: 19.94, clinic: true },
+  { id: 'gda', cheap: ['coke'], exp: ['speed'], police: 2, lat: 54.35, lon: 18.65, clinic: true },
+  { id: 'szc', cheap: ['coke', 'heroin'], exp: [], police: 1, lat: 53.43, lon: 14.55 },
+  { id: 'wro', cheap: ['ecstasy'], exp: ['speed'], police: 2, lat: 51.11, lon: 17.03, clinic: true },
+  { id: 'poz', cheap: ['weed'], exp: ['coke'], police: 1, lat: 52.41, lon: 16.93, clinic: true },
+  { id: 'lod', cheap: ['speed', 'mefa'], exp: [], police: 1, lat: 51.76, lon: 19.46 },
+  { id: 'kat', cheap: ['speed'], exp: ['weed', 'mefa'], police: 2, lat: 50.26, lon: 19.02 },
 ];
 
 export const DIFFS: Record<Diff, { days: number; debt: number; police: number; tut: boolean; showAvg: boolean }> = {
@@ -45,6 +47,11 @@ export const DIFFS: Record<Diff, { days: number; debt: number; police: number; t
   normal: { days: 30, debt: 5000, police: 1, tut: true, showAvg: true },
   hard: { days: 30, debt: 10000, police: 1.5, tut: false, showAvg: false },
 };
+
+/** Bilet: opłata stała + stawka za km; odległość drogowa ≈ w linii prostej × ROAD */
+export const FARE = { base: 15, perKm: 0.2, road: 1.2 };
+/** Cena paliwa za litr (zł) */
+export const FUEL_PRICE = 6.5;
 
 export const START = { cash: 2000, heat: 5, cap: 100, city: 'waw' as CityId };
 export const ECON = {
@@ -59,14 +66,14 @@ export const ECON = {
 };
 
 /** Transport: pojemność, szansa ucieczki przed policją/napadem, mnożnik szansy kontroli */
-/** fuel: 0 = jedziesz pociągiem (bilet); > 0 = własny pojazd, paliwo = bilet × fuel */
+/** fuel: spalanie w l/100 km; 0 = jedziesz pociągiem (bilet) */
 export interface Vehicle { id: VehicleId; price: number; cap: number; run: number; police: number; fuel: number }
 export const VEHICLES: Vehicle[] = [
   { id: 'backpack', price: 0, cap: 100, run: 50, police: 1, fuel: 0 },
   { id: 'bigpack', price: 1500, cap: 150, run: 45, police: 1, fuel: 0 }, // cięższy = trudniej uciec
-  { id: 'scooter', price: 8000, cap: 200, run: 65, police: 1, fuel: 0.5 },
-  { id: 'car', price: 25000, cap: 350, run: 55, police: 1, fuel: 1.3 },
-  { id: 'van', price: 70000, cap: 700, run: 35, police: 1.25, fuel: 2 },
+  { id: 'scooter', price: 8000, cap: 200, run: 65, police: 1, fuel: 3 },
+  { id: 'car', price: 25000, cap: 350, run: 55, police: 1, fuel: 7 },
+  { id: 'van', price: 70000, cap: 700, run: 35, police: 1.25, fuel: 11 },
 ];
 /** Ochrona przed napadem. Nielegalna broń: przy złapaniu przez policję konfiskata + dodatkowa grzywna */
 export interface Weapon { id: WeaponId; price: number; fight: number; legal: boolean }

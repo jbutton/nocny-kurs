@@ -226,6 +226,13 @@ Kupowany w zakładce **Sklep**, tylko „w górę” (każdy następny ma więce
 | Dostawczak | 70 000 zł | 700 | 35% | Kontrole policji ×1,25. |
 | Kurier / dron (później) | — | — | — | Wysyłka bez podróżowania, z ryzykiem utraty. |
 
+**Koszt podróży zależy od odległości** (współrzędne miast, odległość w linii prostej × 1,2 ≈ droga):
+- pociąg (plecak): bilet = 15 zł + 0,20 zł/km, np. Katowice → Kraków (85 km) 32 zł, Gdańsk → Kraków (580 km) 131 zł;
+- własny pojazd: paliwo = km × spalanie × 6,5 zł/l. Skuter 3 l/100 km, auto 7 l/100 km, dostawczak 11 l/100 km (Warszawa → Kraków: 59 / 139 / 218 zł, bilet 76 zł);
+- własnym pojazdem nie da się jechać na gapę; brak kasy na paliwo → „Pożycz brakującą kwotę od Zbycha i jedź” albo sprzedaż towaru/pojazdu;
+- pojazd można sprzedać za 50% ceny (powrót do plecaka 100), tylko gdy towar mieści się w plecaku;
+- Mapa sortuje miasta od najbliższego i pokazuje koszt oraz odległość.
+
 ### 8.1a Sklep: ochrona i napady
 **Napad na trasie** (ok. 7% szans przy podróży z towarem, jeśli nie było kontroli; × mnożnik poziomu trudności: łatwy 0,5, normalny 1, trudny 1,5). Wybory:
 - **Oddaj część towaru:** pewne, tracisz ćwierć każdego towaru.
@@ -238,7 +245,7 @@ Kupowany w zakładce **Sklep**, tylko „w górę” (każdy następny ma więce
 | Kij bejsbolowy | 800 zł | 55% | Legalny. |
 | Pistolet | 6 000 zł | 80% | Nielegalny: przy złapaniu przez policję konfiskata + 1 000 zł grzywny. |
 
-Nowa broń zastępuje poprzednią.
+Kupione przedmioty zostają (każdy kupuje się raz). Obrona = najlepszy przedmiot + 5% za każdy kolejny (max 90%). Po przegranym starciu napastnicy zabierają najlepszą broń.
 
 ### 8.2 Kontakty
 Zdobywasz je przez zlecenia na czacie (np. „przywieź 20 g do Krakowa do piątku”). Przykłady:

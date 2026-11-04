@@ -2,7 +2,7 @@
  * Silnik gry: czyste funkcje (stan → nowy stan + efekty). Bez DOM, bez localStorage, bez Math.random.
  * Każda akcja klonuje stan wejściowy, więc wejście nigdy nie jest modyfikowane (cofanie ruchu = poprzedni stan).
  */
-import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, GOODS, GUN_FINE, LOSS, PROTECT, RESALE, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
+import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, FARE, FUEL_PRICE, GOODS, GUN_FINE, LOSS, PROTECT, RESALE, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
 import { pick, rng } from './rng';
 import type {
   CityId, Diff, Fx, GameState, GoodId, ItemId, Msg, Outcome, PoliceChoice, Rating, RobberyChoice, Sender, Src, TradeMode,
@@ -131,9 +131,23 @@ export function trade(prev: GameState, item: ItemId, mode: TradeMode, n: number,
  * Bez pieniędzy na bilet można jechać tylko na gapę.
  */
 /** Koszt podróży: bilet na pociąg albo paliwo do własnego pojazdu */
-export function travelCost(s: GameState, to: CityId): { kind: 'ticket' | 'fuel'; cost: number } {
+/** Odległość drogowa między miastami w km (w linii prostej × FARE.road, zaokrąglona do 5 km) */
+export function distanceKm(a: CityId, b: CityId): number {
+  if (a === b) return 0;
+  const R = 6371, rad = Math.PI / 180;
+  const A = C[a], B = C[b];
+  const dLat = (B.lat - A.lat) * rad, dLon = (B.lon - A.lon) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(A.lat * rad) * Math.cos(B.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return Math.round((2 * R * Math.asin(Math.sqrt(h)) * FARE.road) / 5) * 5;
+}
+/** Cena biletu na pociąg zależy od odległości */
+export const ticketPrice = (a: CityId, b: CityId) => Math.round(FARE.base + FARE.perKm * distanceKm(a, b));
+/** Koszt podróży z obecnego miasta: bilet albo paliwo (km × spalanie × cena litra) */
+export function travelCost(s: GameState, to: CityId): { kind: 'ticket' | 'fuel'; cost: number; km: number } {
   const fuel = V[s.vehicle].fuel;
-  return fuel ? { kind: 'fuel', cost: Math.round(C[to].ticket * fuel) } : { kind: 'ticket', cost: C[to].ticket };
+  const ticket = ticketPrice(s.city, to);
+  const km = distanceKm(s.city, to);
+  return fuel ? { kind: 'fuel', cost: Math.round((km * fuel * FUEL_PRICE) / 100), km } : { kind: 'ticket', cost: ticket, km };
 }
 export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
   if (to === prev.city || prev.day >= prev.maxDays || prev.pending || prev.over) return { s: prev, fx: [] };

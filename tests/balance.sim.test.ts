@@ -34,7 +34,7 @@ function play(diff: Diff, seed: number, cautious: boolean): Stats {
     const cheap = GOODS.map((g) => ({ id: g.id as GoodId, r: s.prices[s.city][g.id] / ((g.min + g.max) / 2) }))
       .filter((x) => rating(x.id, s.prices[s.city][x.id]) === 'cheap').sort((a, b) => a.r - b.r)[0];
     if (cheap) {
-      const keep = 100;
+      const keep = 150;
       const p = s.prices[s.city][cheap.id];
       const n = Math.min(tradeLimits(s, cheap.id, 'street').maxBuy, Math.floor((s.cash - keep) / p));
       if (n > 0) s = trade(s, cheap.id, 'buy', n).s;
@@ -42,7 +42,7 @@ function play(diff: Diff, seed: number, cautious: boolean): Stats {
     // jedź do losowego innego miasta
     const others = CITIES.filter((c) => c.id !== s.city);
     const to = others[(seed + s.day * 7) % others.length].id;
-    const r = travel(s, to, s.cash < 100);
+    const r = travel(s, to, s.cash < 150);
     s = r.s;
     if (s.pending?.kind === 'police') { st.police++; s = resolvePolice(s, used(s) > 40 && s.cash > s.pending.bribeC ? 'bribe' : 'run').s; }
     if (s.pending?.kind === 'robbery') { st.robbery++; s = resolveRobbery(s, 'run').s; }

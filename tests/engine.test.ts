@@ -121,19 +121,22 @@ describe('recepta i apteka', () => {
 describe('sklep i napad', () => {
   it('własny pojazd: paliwo zamiast biletu', () => {
     const s = { ...afterTutorial(), cash: 100000 };
-    expect(travelCost(s, 'krk')).toEqual({ kind: 'ticket', cost: 50 });
-    expect(travelCost({ ...s, vehicle: 'scooter' }, 'krk')).toEqual({ kind: 'fuel', cost: 25 });
-    expect(travelCost({ ...s, vehicle: 'car' }, 'krk')).toEqual({ kind: 'fuel', cost: 65 });
-    expect(travelCost({ ...s, vehicle: 'van' }, 'krk')).toEqual({ kind: 'fuel', cost: 100 });
-    expect(travel({ ...s, vehicle: 'van' }, 'krk').s.cash).toBe(100000 - 100);
+    // Warszawa → Kraków: 305 km; bilet 15 + 0,2 zł/km; paliwo = km × l/100 × 6,5 zł
+    expect(travelCost(s, 'krk')).toEqual({ kind: 'ticket', cost: 76, km: 305 });
+    expect(travelCost({ ...s, vehicle: 'scooter' }, 'krk')).toEqual({ kind: 'fuel', cost: 59, km: 305 });
+    expect(travelCost({ ...s, vehicle: 'car' }, 'krk')).toEqual({ kind: 'fuel', cost: 139, km: 305 });
+    expect(travelCost({ ...s, vehicle: 'van' }, 'krk')).toEqual({ kind: 'fuel', cost: 218, km: 305 });
+    expect(travel({ ...s, vehicle: 'van' }, 'krk').s.cash).toBe(100000 - 218);
+    // cena zależy od tego, skąd jedziesz
+    expect(travelCost({ ...s, city: 'kat' }, 'krk').cost).toBeLessThan(travelCost({ ...s, city: 'gda' }, 'krk').cost);
   });
   it('pojazdem nie da się na gapę; brak kasy na paliwo → pożyczka i jazda', () => {
     const s = { ...afterTutorial(), vehicle: 'car' as const, cap: 350, cash: 20 };
     expect(travel(s, 'krk', true).s).toBe(s);
-    const r = borrowAndTravel(s, 'krk'); // paliwo 65 zł, brakuje 45
+    const r = borrowAndTravel(s, 'krk'); // paliwo 139 zł, brakuje 119
     expect(r.s.day).toBe(2);
     expect(r.s.cash).toBe(0);
-    expect(r.s.debt).toBe(Math.round((5000 + 45) * 1.07));
+    expect(r.s.debt).toBe(Math.round((5000 + 119) * 1.07));
   });
   it('sprzedaż pojazdu: tylko gdy towar mieści się w plecaku', () => {
     const full = { ...afterTutorial(), vehicle: 'car' as const, cap: 350, cash: 0, inv: { weed: { qty: 150, avg: 20 } } };

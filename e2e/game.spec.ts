@@ -118,10 +118,10 @@ test('auto bez kasy na paliwo: pożyczka i jazda, bez opcji na gapę', async ({ 
   await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ss_save_v3')!); Object.assign(s, { cash: 20, tut: 4, vehicle: 'car', cap: 350 }); localStorage.setItem('ss_save_v3', JSON.stringify(s)); });
   await page.reload();
   await page.getByRole('button', { name: 'Mapa' }).click();
-  await expect(page.getByRole('button', { name: /Kraków/ })).toContainText('paliwo 65 zł');
+  await expect(page.getByRole('button', { name: /Kraków/ })).toContainText('paliwo 139 zł · 305 km');
   await page.getByRole('button', { name: /Kraków/ }).click();
   await expect(page.getByText('Nie stać cię na paliwo')).toBeVisible();
   await expect(page.getByRole('button', { name: /na gapę/ })).toHaveCount(0);
-  await page.getByRole('button', { name: /Pożycz 45 zł od Zbycha i jedź/ }).click();
+  await page.getByRole('button', { name: /Pożycz 119 zł od Zbycha i jedź/ }).click();
   await expect(page.locator('.day')).toContainText('Dzień 2');
 });

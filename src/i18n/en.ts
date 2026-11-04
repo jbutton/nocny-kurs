@@ -107,7 +107,7 @@ export const en: Dict = {
     shopProtectNote: 'Useful when you get robbed on the way. You keep everything you buy: your best item counts, and each extra one adds +{b}% defense. If you lose a fight, the robbers take your best weapon.',
     protectNow: 'Your defense against robbery: ~{p}%', protectNone: "You don't have any protection yet.",
     robLostWeapon: 'They also took your {w}.',
-    capLbl: 'space: {n}', fuelLbl: 'fuel ×{f} ticket', trainLbl: 'by train', runLbl: 'escape ~{p}%', fightLbl: 'defense ~{p}%', illegalLbl: 'illegal',
+    capLbl: 'space: {n}', fuelLbl: 'uses {f} l/100 km', trainLbl: 'by train', runLbl: 'escape ~{p}%', fightLbl: 'defense ~{p}%', illegalLbl: 'illegal',
     vanLbl: 'more police checks', owned: 'owned', buyFor: 'Buy for {c} zł', boughtGear: 'Bought: {item}',
     gunLost: 'The police took your gun and added a {f} zł fine for illegal possession.',
     robTitle: 'Robbery!', robText: 'Two guys corner you in a dark alley: "Hand over the stuff!" What do you do?',
