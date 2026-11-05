@@ -11,3 +11,14 @@ export function rng(s: { seed: number }): number {
 }
 
 export const pick = <T>(s: { seed: number }, arr: readonly T[]): T => arr[Math.floor(rng(s) * arr.length)];
+
+/**
+ * Miesza do stanu generatora porcję losowości z serwera (ranking online).
+ * Bez znajomości `n` nie da się przewidzieć niczego, co silnik wylosuje później.
+ */
+export function mix(seed: number, n: number): number {
+  let h = (seed ^ Math.imul(n | 0, 0x9e3779b1)) | 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return (h ^ (h >>> 16)) | 0;
+}

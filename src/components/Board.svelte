@@ -52,6 +52,7 @@
     {#if online && dialog.online?.status === 'sending'}<div class="place">{t(lang, 'sending')}</div>
     {:else if online && dialog.online?.status === 'ok'}<div class="place">{@html t(lang, 'placeOnline', { n: dialog.online.place })}</div>
     {:else if dialog.online?.status === 'error'}<div class="place warn">{t(lang, 'sendFail', { r: dialog.online.reason })}</div>
+    {:else if online && dialog.online?.status === 'unranked'}<div class="place warn">{t(lang, 'unranked')}</div>
     {:else if !online && localPos >= 0}<div class="place">{@html t(lang, 'place', { n: localPos + 1 })}</div>{/if}
   {/if}
 

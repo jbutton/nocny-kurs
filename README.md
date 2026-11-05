@@ -20,7 +20,7 @@ A free browser trading game: buy low, sell high, dodge the police and pay off Un
 - Shop: bigger backpack, scooter, car, delivery van, protection
 - Debt to Uncle Zbych: repay, borrow, debt collectors, bankruptcy
 - 3 difficulty levels, tutorial, autosave
-- Online leaderboard with cheat protection: the server replays the whole game from its seed and move list and computes the score itself
+- Online leaderboard with cheat protection: the dice are rolled on the server only after you commit to a move, so the future can't be predicted even with the source code; the server replays the whole game and computes the score itself
 - Full English and Polish versions, switchable mid-game
 - No cookies, no tracking — everything is stored locally in the browser
 
@@ -31,6 +31,7 @@ A free browser trading game: buy low, sell high, dodge the police and pay off Un
 ```
 src/game/        game logic in plain TypeScript (no UI) — state + action → new state
 src/game/replay.ts  move log + replay, shared by the game and the leaderboard server
+src/game/run.ts     ranked game protocol: server-side randomness revealed after each decision
 worker/          leaderboard API (Cloudflare Worker + D1)
 src/i18n/        Polish and English texts
 src/stores/      TanStack Store: app state, actions, autosave

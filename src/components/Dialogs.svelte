@@ -15,6 +15,7 @@
   import { C, DODGE, RX } from '../game/data';
   import { bestWeapon, borrowLimit, canVisitClinic, fuelShortfall, rankOf, travelCost } from '../game/engine';
   import Fuel from '@lucide/svelte/icons/fuel';
+  import WifiOff from '@lucide/svelte/icons/wifi-off';
   import { forDiff, NICK_MAX, type BoardEntry } from '../game/leaderboard';
   import type { Diff, GameState, Lang } from '../game/types';
 
@@ -115,6 +116,12 @@
   </Modal>
 {:else if dialog?.kind === 'board'}
   <Board {dialog} {lang} {board} />
+{:else if dialog?.kind === 'offline'}
+  <Modal title={t(lang, 'offlineTitle')} icon={WifiOff} tone="warn">
+    <div class="body">{t(lang, dialog.lost ? 'runLostText' : 'offlineText')}</div>
+    {#if !dialog.lost}<button class="btn center" onclick={actions.retryOnline}>{t(lang, 'retry')}</button>{/if}
+    <button class="btn center" class:sec={!dialog.lost} onclick={actions.playOffline}>{t(lang, 'playOffline')}</button>
+  </Modal>
 {/if}
 
 <style>

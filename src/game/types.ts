@@ -110,6 +110,11 @@ export interface GameState {
   collectWarned: boolean;
   /** dziennik ruchów (do odtworzenia i weryfikacji wyniku w rankingu online) */
   log: Act[];
+  /**
+   * Gra rankingowa online: id rozgrywki na serwerze i liczba ruchów z dziennika, które serwer już ma.
+   * Brak = gra offline (wynik tylko na tym urządzeniu).
+   */
+  run?: { id: string; synced: number } | null;
 }
 
 /** Efekty uboczne dla UI (toast, okno z informacją, koniec gry) */

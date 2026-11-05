@@ -17,6 +17,7 @@
   import Dialogs from './Dialogs.svelte';
   import Skyline from './Skyline.svelte';
   import Logo from './Logo.svelte';
+  import { t } from '../i18n';
 
   // props z Astro: język strony i ścieżka bazowa (store czyta je z <html lang> i import.meta.env)
   let { pageLang: _pl, base: _b }: { pageLang?: string; base?: string } = $props();
@@ -50,6 +51,7 @@
   {#if s.sheet && !blocking}
     {#key s.sheet.item + s.sheet.src}<TradeSheet game={g} lang={s.lang} sheet={s.sheet} />{/key}
   {/if}
+  {#if s.busy}<div class="busy" aria-live="polite"><span>{t(s.lang, 'connecting')}</span></div>{/if}
   <Dialogs game={g} lang={s.lang} dialog={s.dialog} board={s.board} nick={s.nick} />
   {#if s.toast}
     {#key s.toast.id}<Toast toast={s.toast} lang={s.lang} canUndo={!!s.undo} />{/key}
