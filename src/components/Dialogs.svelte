@@ -1,5 +1,6 @@
 <!-- Wszystkie okna dialogowe. Kontrola policji / napad mają pierwszeństwo, bo są częścią stanu gry. -->
 <script lang="ts">
+  import { untrack } from 'svelte';
   import Modal from './Modal.svelte';
   import Logo from './Logo.svelte';
   import Board from './Board.svelte';
@@ -24,7 +25,16 @@
   const P = $derived(game.pending);
   const diffs: Diff[] = ['easy', 'normal', 'hard'];
   let nickInput = $state('');
-  $effect(() => { if (dialog?.kind === 'end') nickInput = nick; });
+  // nick z poprzedniej gry wstawiamy tylko raz, przy otwarciu okna końca gry (nie przy każdej zmianie stanu,
+  // bo wtedy np. znikające powiadomienie kasowało to, co gracz właśnie wpisał)
+  let prefilled = false;
+  $effect(() => {
+    const open = dialog?.kind === 'end';
+    untrack(() => {
+      if (open && !prefilled) nickInput = nick;
+      prefilled = open;
+    });
+  });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const INFO_ICON: Record<string, any> = { polTitle: Siren, robTitle: ShieldAlert, kanarTitle: Ticket, collTitle: HandCoins };
   const medal = (i: number) => ['🥇', '🥈', '🥉'][i] ?? `${i + 1}.`;

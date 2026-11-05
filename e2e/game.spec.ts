@@ -67,7 +67,11 @@ test('koniec gry: nick i ranking', async ({ page }) => {
   });
   await page.reload();
   await page.getByRole('button', { name: 'Zakończ grę' }).click();
-  await page.locator('#nick').fill('Zbyszek');
+  await page.locator('#nick').click();
+  await page.keyboard.type('Zbyszek');
+  // wpisany nick nie może zniknąć, gdy chowa się powiadomienie
+  await page.waitForTimeout(4500);
+  await expect(page.locator('#nick')).toHaveValue('Zbyszek');
   await page.locator('#nick').press('Enter');
   await expect(page.locator('.brow.me')).toContainText('Zbyszek');
   await expect(page.getByText('Zająłeś 1. miejsce')).toBeVisible();
