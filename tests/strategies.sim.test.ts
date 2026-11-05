@@ -6,7 +6,7 @@ import { it } from 'vitest';
 import { CITIES, GOODS, MED, RX, V } from '../src/game/data';
 import { canSellVehicle, newGame, priceOf, rxLeft, score, teleStatus, travelCost, used, visitedToday } from '../src/game/engine';
 import { act, type Act } from '../src/game/replay';
-import type { CityId, Diff, GameState, VehicleId } from '../src/game/types';
+import type { CityId, Diff, VehicleId } from '../src/game/types';
 
 interface Opts { dodge?: boolean; pharm?: boolean; bank?: boolean; van?: boolean; bribe?: boolean }
 function bot(diff: Diff, seed: number, o: Opts): number {

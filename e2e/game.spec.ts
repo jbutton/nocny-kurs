@@ -139,3 +139,30 @@ test('ostatni dzień: przycisk zakończenia na Rynku i na Mapie', async ({ page 
   await page.getByRole('button', { name: 'Zakończ grę' }).click();
   await expect(page.getByText('Koniec gry')).toBeVisible();
 });
+
+test('zamykanie: krzyżyk i Esc w panelu handlu, krzyżyk i dotknięcie powiadomienia', async ({ page }) => {
+  await page.getByRole('button', { name: /^Normalny/ }).click();
+  const sheet = page.getByRole('dialog');
+  await page.getByRole('button', { name: /Haszysz/ }).first().click();
+  await expect(sheet.getByRole('button', { name: 'Zamknij' })).toBeVisible();
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: 'e2e/shots/07-sheet-x.png' });
+  await sheet.getByRole('button', { name: 'Zamknij' }).click();
+  await expect(sheet).toBeHidden();
+  await page.getByRole('button', { name: /Haszysz/ }).first().click();
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
+
+  await page.getByRole('button', { name: /Marihuana/ }).first().click();
+  await sheet.getByRole('button', { name: /Kup/ }).last().click();
+  const toast = page.getByRole('status');
+  await expect(toast).toBeVisible();
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: 'e2e/shots/08-toast-x.png' });
+  await toast.getByRole('button', { name: 'Zamknij' }).click();
+  await expect(toast).toBeHidden();
+  await page.getByRole('button', { name: /Marihuana/ }).first().click();
+  await sheet.getByRole('button', { name: /Kup/ }).last().click();
+  await toast.locator('span').click();
+  await expect(toast).toBeHidden();
+});

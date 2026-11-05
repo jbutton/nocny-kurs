@@ -1,12 +1,15 @@
 <script lang="ts">
   import type { Component, Snippet } from 'svelte';
+  import CloseX from './CloseX.svelte';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let { title, onclose, children, header, icon, tone = 'accent', wide = false }: { title: string; onclose?: () => void; children: Snippet; header?: Snippet; icon?: Component<any>; tone?: 'accent' | 'bad' | 'warn'; wide?: boolean } = $props();
   const Icon = $derived(icon);
 </script>
 
+<svelte:window onkeydown={(e) => e.key === 'Escape' && onclose?.()} />
 <div class="overlay center" role="presentation" onclick={(e) => onclose && e.target === e.currentTarget && onclose()}>
-  <div class="modal" class:wide role="dialog" aria-modal="true" aria-label={title}>
+  <div class="modal" class:wide class:closable={!!onclose} role="dialog" aria-modal="true" aria-label={title}>
+    {#if onclose}<CloseX onclick={onclose} />{/if}
     {@render header?.()}
     <h2>{#if Icon}<span class="ti {tone}"><Icon size={20} strokeWidth={2.4} /></span>{/if}{title}</h2>
     {@render children()}
@@ -14,7 +17,8 @@
 </div>
 
 <style>
-  .modal { width: 100%; max-height: 100%; overflow-y: auto; background: var(--phone); border-radius: 26px; padding: 22px; animation: up .2s ease-out; border: 1px solid var(--line); }
+  .modal { position: relative; width: 100%; max-height: 100%; overflow-y: auto; background: var(--phone); border-radius: 26px; padding: 22px; animation: up .2s ease-out; border: 1px solid var(--line); }
+  .closable h2 { padding-right: 40px; }
   h2 { margin: 0 0 8px; font-size: 21px; display: flex; align-items: center; gap: 10px; }
   .ti { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
   .ti.accent { color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); }

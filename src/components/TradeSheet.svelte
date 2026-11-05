@@ -3,6 +3,7 @@
   zmieniają tylko lokalny stan, więc nic się nie przebudowuje ani nie miga.
 -->
 <script lang="ts">
+  import CloseX from './CloseX.svelte';
   import ItemIcon from './icons/ItemIcon.svelte';
   import { actions, type Sheet } from '../stores/app';
   import { DICTS, fmt, t } from '../i18n';
@@ -40,8 +41,10 @@
   const clampQty = (v: number) => (qty = Math.max(0, Math.min(max, v)));
 </script>
 
+<svelte:window onkeydown={(e) => e.key === 'Escape' && actions.closeSheet()} />
 <div class="overlay" role="presentation" onclick={(e) => e.target === e.currentTarget && actions.closeSheet()}>
   <div class="sheet" role="dialog" aria-modal="true" aria-label={pharm ? t(lang, 'pharmRow') : d.goods[sheet.item]}>
+    <CloseX onclick={actions.closeSheet} />
     <div class="head">
       <ItemIcon name={pharm ? 'pharm' : sheet.item} />
       <div class="grow">
@@ -93,8 +96,8 @@
 </div>
 
 <style>
-  .sheet { width: 100%; background: var(--phone); border-radius: 26px 26px 0 0; padding: 18px 18px 26px; animation: up .2s ease-out; }
-  .head { display: flex; align-items: center; gap: 12px; }
+  .sheet { position: relative; width: 100%; background: var(--phone); border-radius: 26px 26px 0 0; padding: 18px 18px 26px; animation: up .2s ease-out; }
+  .head { display: flex; align-items: center; gap: 12px; padding-right: 44px; }
   .big { font-size: 19px; }
   .seg { display: flex; background: var(--card); border-radius: 14px; padding: 4px; margin: 12px 0; }
   .seg button { flex: 1; border: 0; background: none; color: var(--muted); font-weight: 800; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 15px; }
