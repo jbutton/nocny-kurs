@@ -13,7 +13,7 @@
   import { actions, type Dialog } from '../stores/app';
   import { DICTS, fmt, t, tm } from '../i18n';
   import { C, DODGE, RX } from '../game/data';
-  import { bestWeapon, borrowLimit, canVisitClinic, fuelShortfall, rankOf, travelCost } from '../game/engine';
+  import { bestWeapon, borrowLimit, canVisitClinic, fuelShortfall, rankOf, rxLeft, travelCost, visitedToday } from '../game/engine';
   import Fuel from '@lucide/svelte/icons/fuel';
   import WifiOff from '@lucide/svelte/icons/wifi-off';
   import { forDiff, NICK_MAX, type BoardEntry } from '../game/leaderboard';
@@ -78,7 +78,9 @@
   </Modal>
 {:else if dialog?.kind === 'clinic'}
   <Modal title={t(lang, 'clinicTitle')} icon={Stethoscope} onclose={actions.closeDialog}>
-    <div class="body">{@html t(lang, 'clinicText', { c: RX.visit, l: RX.limit, v: RX.valid, tc: RX.tele, w: RX.teleWindow })}</div>
+    <div class="body">{@html t(lang, 'clinicText', { c: RX.visit, l: RX.limit, v: RX.valid, tc: RX.tele, w: RX.teleWindow })}
+      {#if visitedToday(game)}<br /><br /><span class="warn">{t(lang, 'clinicToday')}</span>
+      {:else if rxLeft(game) > 0}<br /><br />{@html t(lang, 'clinicNow', { n: rxLeft(game), l: RX.limit, t: rxLeft(game) + RX.limit })}{/if}</div>
     <button class="btn center" disabled={!canVisitClinic(game)} onclick={actions.clinicVisit}>{t(lang, 'clinicGo', { c: RX.visit })}</button>
     <button class="btn sec center" onclick={actions.closeDialog}>{t(lang, 'cancel')}</button>
   </Modal>

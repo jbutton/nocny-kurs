@@ -374,14 +374,18 @@ export function buyWeapon(prev: GameState, id: WeaponId): Outcome {
 }
 
 // ---------------------------------------------------------------- recepta
-export const canVisitClinic = (s: GameState) => !!C[s.city].clinic && s.cash >= RX.visit;
+/** Dziś już była wizyta (lekarz przyjmuje raz dziennie) */
+export const visitedToday = (s: GameState) => !!s.rx && s.rx.visit === s.day;
+export const canVisitClinic = (s: GameState) => !!C[s.city].clinic && s.cash >= RX.visit && !visitedToday(s);
 export function clinicVisit(prev: GameState): Outcome {
   if (!prev.rxUnlocked || !canVisitClinic(prev)) return { s: prev, fx: [] };
   const s = clone(prev);
   s.cash -= RX.visit;
-  s.rx = { limit: RX.limit, used: 0, until: s.day + RX.valid, visit: s.day };
-  addChat(s, 'seba', 'rxGot');
-  return { s, fx: [{ t: 'toast', msg: m('rxInfo', { u: 0, l: RX.limit, d: s.rx.until }) }] };
+  // kolejna recepta dokłada gramy do tego, co zostało z poprzedniej, i odnawia ważność
+  const left = rxLeft(prev);
+  s.rx = { limit: left + RX.limit, used: 0, until: s.day + RX.valid, visit: s.day };
+  if (!prev.rx) addChat(s, 'seba', 'rxGot');
+  return { s, fx: [{ t: 'toast', msg: left ? m('rxMore', { l: RX.limit, n: s.rx.limit, d: s.rx.until }) : m('rxInfo', { u: 0, l: RX.limit, d: s.rx.until }) }] };
 }
 export type TeleStatus = 'ok' | 'none' | 'off' | 'window' | 'cash';
 export function teleStatus(s: GameState): TeleStatus {

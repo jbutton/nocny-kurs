@@ -93,6 +93,15 @@ describe('recepta i apteka', () => {
     expect(s.rx).toMatchObject({ limit: RX.limit, used: 0, until: 1 + RX.valid });
     expect(s.cash).toBe(10000 - RX.visit);
   });
+  it('kolejna wizyta dokłada gramy (raz dziennie)', () => {
+    const s = withRx();
+    expect(clinicVisit(s).s).toBe(s); // dziś już była wizyta
+    const bought = trade(s, 'medweed', 'buy', 10, 'pharm').s;
+    const next = clinicVisit({ ...bought, day: 2 }).s;
+    expect(rxLeft(next)).toBe(RX.limit - 10 + RX.limit);
+    expect(next.rx?.until).toBe(2 + RX.valid);
+    expect(next.cash).toBe(bought.cash - RX.visit);
+  });
   it('apteka: zakup ograniczony limitem recepty', () => {
     const s = withRx();
     expect(tradeLimits(s, 'medweed', 'pharm').maxBuy).toBe(RX.limit);
