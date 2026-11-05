@@ -112,6 +112,7 @@ export const en: Dict = {
     robLostWeapon: 'They also took your {w}.',
     capLbl: 'space: {n}', fuelLbl: 'uses {f} l/100 km', trainLbl: 'by train', runLbl: 'escape ~{p}%', fightLbl: 'defense ~{p}%', illegalLbl: 'illegal',
     vanLbl: 'more police checks', owned: 'owned', buyFor: 'Buy for {c} zł', boughtGear: 'Bought: {item}',
+    fineDebt: "You were {d} zł short for the fine, so Uncle Zbych covered it… and added it to your debt.",
     gunLost: 'The police took your gun and added a {f} zł fine for illegal possession.',
     robTitle: 'Robbery!', robText: 'Two guys corner you in a dark alley: "Hand over the stuff!" What do you do?',
     robGiveBtn: 'Hand over some', robGive: 'You hand over part of your stash. They leave happy.', robGiveSub: 'Safe · you lose a quarter of each item',

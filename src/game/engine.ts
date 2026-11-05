@@ -2,7 +2,7 @@
  * Silnik gry: czyste funkcje (stan → nowy stan + efekty). Bez DOM, bez localStorage, bez Math.random.
  * Każda akcja klonuje stan wejściowy, więc wejście nigdy nie jest modyfikowane (cofanie ruchu = poprzedni stan).
  */
-import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, FARE, FUEL_PRICE, GOODS, GUN_FINE, LOSS, PROTECT, RESALE, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
+import { basePrice, BORROW, C, CITIES, COLLECT, DIFFS, DODGE, ECON, FARE, FINE_MIN, FUEL_PRICE, GOODS, GUN_FINE, LOSS, PROTECT, RESALE, MED, MED_PREMIUM, ROBBERY_CHANCE, RX, START, V, W } from './data';
 import { pick, rng } from './rng';
 import type {
   CityId, Diff, Fx, GameState, GoodId, ItemId, Msg, Outcome, PoliceChoice, Rating, RobberyChoice, Sender, Src, TradeMode,
@@ -253,6 +253,19 @@ function loseShare(s: GameState, share: number, keepLegal: boolean): boolean {
   }
   return legal;
 }
+/**
+ * Płaci grzywnę: najpierw gotówka, potem bank, a brakującą resztę wykłada Zbychu i dopisuje do długu.
+ * Zwraca kwotę dopisaną do długu.
+ */
+function payFine(s: GameState, f: number): number {
+  const cash = Math.min(s.cash, f);
+  s.cash -= cash;
+  const bank = Math.min(s.bank, f - cash);
+  s.bank -= bank;
+  const rest = f - cash - bank;
+  s.debt += rest;
+  return rest;
+}
 export function resolvePolice(prev: GameState, choice: PoliceChoice): Outcome {
   const P = prev.pending;
   if (!P || P.kind !== 'police') return { s: prev, fx: [] };
@@ -262,13 +275,14 @@ export function resolvePolice(prev: GameState, choice: PoliceChoice): Outcome {
   s.pending = null;
   const body: Msg[] = [];
   const caught = (mult = 1, key = 'caught') => {
-    const f = Math.round(s.cash * LOSS.policeFine * mult);
-    s.cash -= f;
+    const f = Math.max(FINE_MIN, Math.round(s.cash * LOSS.policeFine)) * mult;
+    let owed = payFine(s, f);
     s.heat = Math.min(100, s.heat + 15);
     body.push(m(key, { f }));
     if (loseShare(s, LOSS.policeCaught, true)) body.push(m('keptMed'));
     const illegal = s.weapons.filter((w) => !W[w].legal);
-    if (illegal.length) { s.weapons = s.weapons.filter((w) => W[w].legal); s.cash = Math.max(0, s.cash - GUN_FINE); body.push(m('gunLost', { f: GUN_FINE })); }
+    if (illegal.length) { s.weapons = s.weapons.filter((w) => W[w].legal); owed += payFine(s, GUN_FINE); body.push(m('gunLost', { f: GUN_FINE })); }
+    if (owed > 0) body.push(m('fineDebt', { d: owed }));
   };
   if (choice === 'run') {
     if (rng(s) * 100 < P.runP) { s.heat = Math.min(100, s.heat + 10); body.push(m('okRun')); } else caught();

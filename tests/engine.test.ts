@@ -196,6 +196,14 @@ describe('sklep i napad', () => {
     expect(r.s.weapons).toEqual(['bat']); // legalny kij zostaje
     expect(r.s.inv.weed?.qty).toBe(2); // zabrali połowę
   });
+  it('grzywna: co najmniej 500 zł; brakuje gotówki → bank, potem dług u Zbycha', () => {
+    const base: GameState = { ...afterTutorial(), weapons: [], inv: { weed: { qty: 5, avg: 20 } } };
+    const pend = { kind: 'police', illegal: 5, legal: 0, runP: 0, bribeC: 300, bribeP: 50, canBluff: false } as const;
+    const broke = resolvePolice({ ...base, cash: 10, bank: 100, debt: 1000, pending: pend }, 'run').s;
+    expect([broke.cash, broke.bank, broke.debt]).toEqual([0, 0, 1390]);
+    const rich = resolvePolice({ ...base, cash: 10000, bank: 0, debt: 0, pending: pend }, 'run').s;
+    expect(rich.cash).toBe(8000); // 20% gotówki, gdy to więcej niż minimum
+  });
   it('napad: oddanie ćwierci towaru, nieudana ucieczka = połowa', () => {
     const s: GameState = { ...afterTutorial(), inv: { weed: { qty: 5, avg: 20 }, coke: { qty: 1, avg: 500 } }, pending: { kind: 'robbery', runP: 50, fightP: 0 } };
     const r = resolveRobbery(s, 'give');

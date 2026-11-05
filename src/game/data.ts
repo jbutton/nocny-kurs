@@ -83,6 +83,8 @@ export const WEAPONS: Weapon[] = [
   { id: 'gun', price: 6000, fight: 80, legal: false },
 ];
 export const GUN_FINE = 1000;
+/** Najniższa grzywna przy wpadce (inaczej przy pustym portfelu wychodziło 0–2 zł) */
+export const FINE_MIN = 500;
 /** Odsprzedaż pojazdu: ułamek ceny zakupu */
 export const RESALE = 0.5;
 /** Ochrona się sumuje: najlepszy przedmiot + bonus za każdy kolejny, z limitem */

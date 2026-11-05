@@ -110,6 +110,7 @@ export const pl = {
     robLostWeapon: 'Zabrali ci też: {w}.',
     capLbl: 'miejsce: {n}', fuelLbl: 'pali {f} l/100 km', trainLbl: 'pociągiem', runLbl: 'ucieczka ~{p}%', fightLbl: 'obrona ~{p}%', illegalLbl: 'nielegalne',
     vanLbl: 'częstsze kontrole', owned: 'masz', buyFor: 'Kup za {c} zł', boughtGear: 'Kupiono: {item}',
+    fineDebt: 'Brakło ci {d} zł na grzywnę, więc Wujek Zbychu dopłacił… i dopisał to do długu.',
     gunLost: 'Policja zabrała ci pistolet i dołożyła {f} zł grzywny za nielegalną broń.',
     robTitle: 'Napad!', robText: 'W ciemnej bramie zaczepia cię dwóch typów: „Dawaj towar!”. Co robisz?',
     robGiveBtn: 'Oddaj część towaru', robGive: 'Oddajesz część towaru. Odchodzą zadowoleni.', robGiveSub: 'Pewne · tracisz ćwierć każdego towaru',
