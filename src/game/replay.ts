@@ -44,7 +44,11 @@ const norm = (a: Act): Act => {
   return a;
 };
 
+const NOOP = (s: GameState): Outcome => ({ s, fx: [] });
 function run(s: GameState, a: Act): Outcome {
+  // po końcu gry nic się nie zmienia; w trakcie kontroli / napadu można tylko podjąć decyzję
+  if (s.over && a[0] !== 'e') return NOOP(s);
+  if (s.pending && !['p', 'r', 'e'].includes(a[0])) return NOOP(s);
   switch (a[0]) {
     case 't': return E.trade(s, a[1], a[2], a[3], a[4]);
     case 'v': return E.travel(s, a[1], a[2]);

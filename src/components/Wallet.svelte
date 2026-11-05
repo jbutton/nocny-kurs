@@ -58,6 +58,8 @@
       {/if}
       {#if tele === 'off'}
         <div class="note" style="margin-top:8px">{t(lang, 'teleOff', { n: game.teleOff })}</div>
+      {:else if tele === 'today'}
+        <div class="note" style="margin-top:8px">{t(lang, 'teleToday')}</div>
       {:else if tele === 'window'}
         <div class="note" style="margin-top:8px">{t(lang, 'teleNo', { w: RX.teleWindow })}</div>
       {:else}

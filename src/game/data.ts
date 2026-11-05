@@ -90,7 +90,8 @@ export const RESALE = 0.5;
 /** Ochrona się sumuje: najlepszy przedmiot + bonus za każdy kolejny, z limitem */
 export const PROTECT = { perExtra: 5, max: 90 };
 /** Jazda na gapę: szansa na kanara i wysokość mandatu */
-export const DODGE = { chance: 0.3, fine: 150 };
+/** mandat 300 zł: średnio gapa kosztuje 90 zł, więc opłaca się tylko na najdłuższych trasach (przy 150 zł bilet nie miał sensu) */
+export const DODGE = { chance: 0.3, fine: 300 };
 /** Pożyczka od Zbycha: limit długu = max(capMult × dług startowy, worthMult × majątek) */
 export const BORROW = { capMult: 3, worthMult: 2 };
 /** Windykacja: powyżej atMult × długu startowego, co `every` dni zabierają część gotówki albo towaru */

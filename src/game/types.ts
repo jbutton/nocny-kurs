@@ -35,6 +35,8 @@ export interface Rx {
   until: number;
   /** dzień wizyty stacjonarnej, od niego liczy się okno teleporady */
   visit: number;
+  /** dzień ostatniej recepty (wizyta albo teleporada) — lekarz wystawia najwyżej jedną dziennie */
+  last?: number;
 }
 export interface MarketEvent {
   good: GoodId;
@@ -102,6 +104,8 @@ export interface GameState {
   canada: number;
   teleOff: number;
   traded: boolean;
+  /** sztuki kupione / sprzedane dziś (duży obrót podnosi „obławę”, także gdy rozbijesz go na małe transakcje) */
+  vol?: { buy: number; sell: number };
   /** trwająca kontrola policji; zapisana w stanie, więc odświeżenie strony jej nie omija */
   pending: Pending | null;
   over: boolean;

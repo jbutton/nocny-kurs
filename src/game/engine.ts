@@ -96,7 +96,20 @@ export function defaultMode(s: GameState, item: ItemId, src: Src): TradeMode {
 }
 
 // ---------------------------------------------------------------- handel
+const SRCS: Src[] = ['street', 'pharm'];
+const isItem = (x: unknown): x is ItemId => x === MED.id || GOODS.some((g) => g.id === x);
+/**
+ * Duży obrót podnosi „obławę” o 5 — raz dziennie dla kupna i raz dla sprzedaży, gdy suma sztuk z dnia
+ * przekroczy ECON.bigTrade (rozbicie na małe transakcje nic nie daje).
+ */
+function volumeHeat(s: GameState, mode: TradeMode, n: number) {
+  const vol = (s.vol ??= { buy: 0, sell: 0 });
+  const was = vol[mode] > ECON.bigTrade;
+  vol[mode] += n;
+  if (!was && vol[mode] > ECON.bigTrade) s.heat = Math.min(100, s.heat + 5);
+}
 export function trade(prev: GameState, item: ItemId, mode: TradeMode, n: number, src: Src = 'street'): Outcome {
+  if (!Number.isInteger(n) || !isItem(item) || !SRCS.includes(src)) return { s: prev, fx: [] };
   const L = tradeLimits(prev, item, src);
   if (n <= 0 || !tradeModes(item, src).includes(mode) || n > (mode === 'buy' ? L.maxBuy : L.own)) return { s: prev, fx: [] };
   const s = clone(prev);
@@ -107,7 +120,7 @@ export function trade(prev: GameState, item: ItemId, mode: TradeMode, n: number,
     it.qty += n;
     s.cash -= p * n;
     if (src === 'pharm' && s.rx) s.rx.used += n;
-    else if (n > ECON.bigTrade) s.heat = Math.min(100, s.heat + 5);
+    else volumeHeat(s, 'buy', n);
   } else {
     it.qty -= n;
     s.cash += p * n;
@@ -118,7 +131,7 @@ export function trade(prev: GameState, item: ItemId, mode: TradeMode, n: number,
     const k = s.city + mk;
     s.sat[k] = Math.min(ECON.satMax, (s.sat[k] ?? 0) + n * ECON.satPerUnit);
     if (item === MED.id) s.heat = Math.min(100, s.heat + 3);
-    else if (n > ECON.bigTrade) s.heat = Math.min(100, s.heat + 5);
+    else volumeHeat(s, 'sell', n);
   }
   s.traded = true;
   if (s.tut === 0 && mode === 'buy' && item === 'weed') { s.tut = 1; addChat(s, 'seba', 'tut1'); }
@@ -174,6 +187,9 @@ export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
   }
   s.heat = Math.max(0, s.heat - (s.traded ? 2 : 10));
   s.traded = false;
+  s.vol = { buy: 0, sell: 0 };
+  // samouczek kończy się sam po kilku dniach (inaczej omijając Kraków można by grać bez policji)
+  if (s.tut < 4 && s.day > 3) s.tut = 4;
   for (const k in s.sat) s.sat[k] *= 0.5;
   s.events = s.events.map((e) => ({ ...e, days: e.days - 1 })).filter((e) => e.days > 0);
   s.shortage = Math.max(0, s.shortage - 1);
@@ -218,7 +234,7 @@ export function travel(prev: GameState, to: CityId, dodge = false): Outcome {
 
 /** Ostatni dzień: gracz kończy grę ręcznie */
 export function finish(prev: GameState): Outcome {
-  if (prev.over) return { s: prev, fx: [] };
+  if (prev.over || prev.pending) return { s: prev, fx: [] };
   const s = clone(prev);
   s.over = true;
   return { s, fx: [{ t: 'end' }] };
@@ -389,7 +405,7 @@ export function buyWeapon(prev: GameState, id: WeaponId): Outcome {
 
 // ---------------------------------------------------------------- recepta
 /** Dziś już była wizyta (lekarz przyjmuje raz dziennie) */
-export const visitedToday = (s: GameState) => !!s.rx && s.rx.visit === s.day;
+export const visitedToday = (s: GameState) => !!s.rx && (s.rx.last ?? s.rx.visit) === s.day;
 export const canVisitClinic = (s: GameState) => !!C[s.city].clinic && s.cash >= RX.visit && !visitedToday(s);
 export function clinicVisit(prev: GameState): Outcome {
   if (!prev.rxUnlocked || !canVisitClinic(prev)) return { s: prev, fx: [] };
@@ -397,15 +413,16 @@ export function clinicVisit(prev: GameState): Outcome {
   s.cash -= RX.visit;
   // kolejna recepta dokłada gramy do tego, co zostało z poprzedniej, i odnawia ważność
   const left = rxLeft(prev);
-  s.rx = { limit: left + RX.limit, used: 0, until: s.day + RX.valid, visit: s.day };
+  s.rx = { limit: left + RX.limit, used: 0, until: s.day + RX.valid, visit: s.day, last: s.day };
   if (!prev.rx) addChat(s, 'seba', 'rxGot');
   return { s, fx: [{ t: 'toast', msg: left ? m('rxMore', { l: RX.limit, n: s.rx.limit, d: s.rx.until }) : m('rxInfo', { u: 0, l: RX.limit, d: s.rx.until }) }] };
 }
-export type TeleStatus = 'ok' | 'none' | 'off' | 'window' | 'cash';
+export type TeleStatus = 'ok' | 'none' | 'off' | 'window' | 'today' | 'cash';
 export function teleStatus(s: GameState): TeleStatus {
   if (!s.rx) return 'none';
   if (s.teleOff) return 'off';
   if (s.day - s.rx.visit > RX.teleWindow) return 'window';
+  if (visitedToday(s)) return 'today';
   if (s.cash < RX.tele) return 'cash';
   return 'ok';
 }
@@ -413,9 +430,9 @@ export function teleRenew(prev: GameState): Outcome {
   if (teleStatus(prev) !== 'ok' || !prev.rx) return { s: prev, fx: [] };
   const s = clone(prev);
   s.cash -= RX.tele;
-  // wizyta stacjonarna się nie zmienia: okno teleporady liczy się od niej
-  s.rx = { ...s.rx!, used: 0, until: s.day + RX.valid };
-  return { s, fx: [{ t: 'toast', msg: m('teleDone', { d: s.rx.until }) }] };
+  // jak wizyta: nowa recepta na +30 g do tego, co zostało; okno teleporady dalej liczy się od wizyty stacjonarnej
+  s.rx = { ...s.rx!, limit: rxLeft(prev) + RX.limit, used: 0, until: s.day + RX.valid, last: s.day };
+  return { s, fx: [{ t: 'toast', msg: m('teleDone', { l: RX.limit, n: s.rx.limit, d: s.rx.until }) }] };
 }
 
 // ---------------------------------------------------------------- dług: pożyczki, windykacja, bankructwo

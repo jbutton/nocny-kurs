@@ -84,7 +84,7 @@ Każdy towar zajmuje 1 miejsce w ekwipunku, chyba że podano inaczej.
 To polska „szara strefa”: legalne, półlegalne i nielegalne w jednym.
 
 **Nowe miejsca w mieście:**
-- **Klinika konopna** (tylko w większych miastach): wizyta za 250 zł daje **Receptę** na N gramów (np. 30). Pierwsza wizyta wymaga obecności w mieście z kliniką. Przedłużenie przez aplikację „Teleporada” kosztuje 150 zł i działa z każdego miejsca, ale tylko wtedy, gdy pierwsza wizyta była niedawno (w grze: w ciągu 10 dni).
+- **Klinika konopna** (tylko w większych miastach): wizyta za 250 zł daje **Receptę** na N gramów (np. 30). Pierwsza wizyta wymaga obecności w mieście z kliniką. Przedłużenie przez aplikację „Teleporada” kosztuje 150 zł i działa z każdego miejsca, ale tylko wtedy, gdy pierwsza wizyta była niedawno (w grze: w ciągu 10 dni). Każda recepta (wizyta albo teleporada) dokłada +30 g do tego, co zostało, i odnawia ważność; lekarz wystawia najwyżej jedną receptę dziennie (wcześniej teleporadę dało się powtarzać bez końca tego samego dnia).
 - **Apteka:** nowy towar **„Susz apteczny”**. Kupisz go tylko z receptą i najwyżej tyle, na ile jest wystawiona. Cena 20–85 zł/g, mocno różna w każdym mieście. Czasem „brak na stanie”.
 
 **Co daje recepta:**
@@ -145,7 +145,7 @@ cena przycinana do [min × 0.3, max × 3]
 - W multiplayerze ten sam mechanizm działa dla wszystkich graczy jednocześnie (patrz §11).
 
 ### 5.2a Brak pieniędzy: gapa, pożyczka, windykacja, bankructwo
-- **Jazda na gapę:** zawsze możliwa (a bez pieniędzy na bilet jedyna opcja). 30% szans na kanara, mandat 150 zł. Bez gotówki Zbychu płaci mandat i dopisuje go do długu.
+- **Jazda na gapę:** zawsze możliwa (a bez pieniędzy na bilet jedyna opcja). 30% szans na kanara, mandat 300 zł (przy 150 zł gapa wychodziła taniej niż bilet prawie na każdej trasie). Bez gotówki Zbychu płaci mandat i dopisuje go do długu.
 - **Pożyczka od Zbycha** (Portfel → Pożycz): limit długu = max(3 × dług startowy, 2 × majątek). Domyślna kwota 0, żeby nie pożyczyć za dużo jednym kliknięciem.
 - **Windykacja:** dług > 2 × startowy. Najpierw ostrzeżenie na czacie, potem co 3 dni „chłopcy Zbycha” zabierają 30% gotówki (na poczet długu), a gdy gotówki brak, połowę towaru (wycenioną po połowie ceny).
 - **Bankructwo:** gotówka + bank poniżej ceny najtańszego towaru, pusty plecak i brak limitu pożyczki oznaczają koniec gry z ekranem „Bankrut” (bez wpisu do rankingu).
@@ -409,7 +409,7 @@ Główny ekran to smartfon. Na desktopie telefon jest na środku, a obok rozmyte
 | Stan UI | **@tanstack/store** | Pakiet niezależny od frameworka. Jeden store z całym stanem gry, subskrypcje do renderu i autozapisu. |
 | UI gry (wyspa Astro) | **Svelte 5** | Kompiluje się do małego JS i dobrze integruje z Astro. TanStack Store ma adapter `@tanstack/svelte-store`. |
 | Dane z serwera (później) | **@tanstack/svelte-query** | Ranking online i ewentualne konta, gdy dojdzie backend. |
-| Backend (później) | **Astro API routes** (endpointy) + baza (np. SQLite/Turso) | Ranking online z weryfikacją wyniku przez odtworzenie gry. |
+| Backend | **Astro API routes** (endpointy) + baza (np. SQLite/Turso) | Ranking online z weryfikacją wyniku przez odtworzenie gry. |
 | Testy | Vitest (logika), Playwright (e2e) | |
 
 > Routing robi Astro (TanStack Router/Start nie są potrzebne).
@@ -451,3 +451,16 @@ Po zmianie strat z „cały towar” na „połowa” i skalowaniu napadów pozi
 - [ ] Bramka wieku 18+ na starcie. Model zarabiania (sieci reklamowe mogą odrzucić tematykę narkotykową; rozważyć dotacje/„postaw kawę” albo kosmetyczne płatności).
 - [x] Wybór frameworka: Astro + Svelte 5 + TanStack (§14).
 - [x] UI wyspy gry: Svelte 5.
+
+## Przegląd zasad (5.11.2026)
+
+Testy w `tests/exploits.test.ts` (każda znaleziona dziura ma test), fuzzer `tests/fuzz.sim.test.ts` (3000 gier z losowymi ruchami, po każdym ruchu sprawdzenie, czy stan jest możliwy, i odtworzenie z dziennika) i pojedynek strategii `tests/strategies.sim.test.ts`. Naprawione:
+- teleporada powtarzana w kółko tego samego dnia = nieograniczony susz z apteki;
+- w trakcie kontroli/napadu dało się handlować, wpłacać do banku albo zakończyć grę (np. sprzedać towar przed „wyrzuceniem”) — teraz tylko decyzja;
+- po zakończeniu gry ruchy dalej zmieniały stan;
+- ułamkowe/NaN ilości i nieistniejące towary w handlu (przez API);
+- samouczek bez jazdy do Krakowa = gra bez policji do końca — samouczek kończy się sam po 3. dniu;
+- rozbicie dużej transakcji na małe omijało wzrost obławy — liczy się suma z dnia;
+- jazda na gapę była tańsza od biletu na 27 z 28 tras (mandat 150 → 300 zł);
+- grzywny przy pustym portfelu wynosiły 0–2 zł (minimum 500 zł, reszta z banku, potem dług);
+- druga wizyta w klinice nie dokładała gramów.
